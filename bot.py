@@ -1,33 +1,18 @@
+# bot.py
 import os
-import discord
+import random
 from dotenv import load_dotenv
 
-#Read in enviorment viariables
+
+from discord.ext import commands
+
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD = os.getenv('DISCORD_GUILD')
-GUILDID = int(os.getenv('DISCORD_GUILD_ID'))
 
-#initialize bot client
-intents = discord.Intents.default()
-intents.members = True
-intents.messages = True
-client = discord.Client(intents = intents)
+bot = commands.Bot(command_prefix='!')
 
-#event listeners
-@client.event
+@bot.event
 async def on_ready():
-	guild = discord.utils.find(lambda g: g.id == GUILDID, client.guilds )
-	print(
-	f'{client.user} has connected to Discord! \n'
-	f'{guild.name} (id: {guild.id})'
-	)
-			
+    print(f'{bot.user.name} has connected to Discord!')
 
-	members = '\n - '.join(member.name for member in guild.members)
-	print (f'Guild Members: \n - {members} ')
-
-
-
-#start the actual bot
-client.run(TOKEN)
+bot.run(TOKEN)
