@@ -3,6 +3,7 @@ import disnake
 from dotenv import load_dotenv
 from disnake.ext import commands
 import database as db
+import whitelistSpreadsheet as ws
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -54,7 +55,7 @@ async def check_freeloaders(inter):
     guild = disnake.utils.get(bot.guilds, name = GUILD)
     members = [member for member in guild.members]
     for member in members:
-        if db.getWhitelistStatus(member.id):
+        if ws.checkMemberWhitelist(member.name + "#" + member.discriminator):
             freeloader = True
             for role in member.roles:
                 if WHITELISTROLE == role.id:
@@ -73,7 +74,11 @@ async def check_freeloaders(inter):
 async def test_tpf(inter):
     memberID = inter.author.id
     print(memberID)
+    test = inter.author.discriminator
+    print(test)
+    
     await inter.response.send_message("testing in progress")
+
 
 
 bot.run(TOKEN)

@@ -4,3 +4,5 @@
 dependencies:
     disnake
     dotenv
+    pygsheets
+    pandas
