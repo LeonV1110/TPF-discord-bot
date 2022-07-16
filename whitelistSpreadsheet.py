@@ -14,12 +14,15 @@ df = wks.get_as_df()
 
 def test():
     print(df.columns)
-    checkMemberWhitelist("JSquad81#9733")
+    print(checkMemberWhitelist("Jyoshikai#6778"))
     return
 
 def checkMemberWhitelist(discordName):
     whitelisters = df.loc[df['group'] == 'whitelist']
     user = whitelisters.loc[whitelisters['discord username'] == discordName ]
-    if (str(user.steamid) != ""):
+    
+    if (user.empty):
+        return False
+    elif not (user.steamid.empty):
         return True
     return False

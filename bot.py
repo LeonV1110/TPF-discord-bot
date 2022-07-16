@@ -55,7 +55,8 @@ async def check_freeloaders(inter):
     guild = disnake.utils.get(bot.guilds, name = GUILD)
     members = [member for member in guild.members]
     for member in members:
-        if ws.checkMemberWhitelist(member.name + "#" + member.discriminator):
+        fullname = member.name + "#" + member.discriminator
+        if ws.checkMemberWhitelist(fullname):
             freeloader = True
             for role in member.roles:
                 if WHITELISTROLE == role.id:
@@ -63,9 +64,7 @@ async def check_freeloaders(inter):
             if (freeloader):
                 freeloaders.append([member.name, member.id])
                 freeloadersString +=  "Name: " + member.name + ", Id: " + str(member.id) + "\n"
-    
-    response = str(freeloadersString)
-    embed = disnake.Embed(title=  "Freeloaders:", description=response)
+    embed = disnake.Embed(title=  "Freeloaders:", description=freeloadersString)
     await inter.response.send_message(embed = embed)
     return
 
