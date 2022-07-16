@@ -13,4 +13,5 @@ def connectDatabase():
 
 def addWhitelist():
     do = "something"
+    print("Add whitelist started")
     #TODO
