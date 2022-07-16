@@ -45,6 +45,28 @@ async def update_whitelist(inter):
             response = "You have recieved whitelist, thanks for suporting us!"
     embed = disnake.Embed(title= response)
     await inter.response.send_message(embed = embed)
+    return
+
+@bot.slash_command(description="Checks if anyone has whitelist while not having an appropiate role") #TODO, make sure this is only visable to admins
+async def check_freeloaders(inter):
+    freeloaders = []
+    freeloadersString = ""
+    guild = disnake.utils.get(bot.guilds, name = GUILD)
+    members = [member for member in guild.members]
+    for member in members:
+        if db.getWhitelistStatus(member.id):
+            freeloader = True
+            for role in member.roles:
+                if WHITELISTROLE == role.id:
+                    freeloader = False
+            if (freeloader):
+                freeloaders.append([member.name, member.id])
+                freeloadersString +=  "Name: " + member.name + ", Id: " + str(member.id) + "\n"
+    
+    response = str(freeloadersString)
+    embed = disnake.Embed(title=  "Freeloaders:", description=response)
+    await inter.response.send_message(embed = embed)
+    return
 
 
 @bot.slash_command(description="")

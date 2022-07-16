@@ -8,10 +8,15 @@ GUILDID = int(os.getenv('DISCORD_GUILD_ID'))
 WHITELISTROLE = os.getenv('WHITELIST_ROLE')
 
 def connectDatabase():
-    do = "something"
+    return
     #TODO
 
 def addWhitelist():
-    do = "something"
     print("Add whitelist started")
+    return
     #TODO
+
+def getWhitelistStatus(id):
+    #TODO
+    
+    return True
