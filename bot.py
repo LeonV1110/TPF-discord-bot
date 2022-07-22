@@ -72,9 +72,9 @@ async def check_freeloaders(inter):
             if (freeloader):
                 freeloaders.append([member.name, member.id])
                 freeloadersString +=  "Name: " + member.name + ", Id: " + str(member.id) + "\n"
-    embed = disnake.Embed(title=  "Freeloaders:", description=freeloadersString)
+    embeded = disnake.Embed(title=  "Freeloaders:", description=freeloadersString)
 
-    await inter.followup.send(embed = embed)
+    await inter.followup.send(freeloadersString)
 
     print(freeloader)
     return
@@ -94,8 +94,12 @@ async def test_tpf(inter):
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def get_whitelist_id(inter):
     print(inter.author.roles)
-    await inter.response.defer()
-    await inter.followup.send("Done")
+    await inter.response.send_message("test")
+    print(inter.token)
+    #await inter.response.defer()
+    new = await inter.followup()
+    await new.response.send_message("test")
+    #await inter.followup.send("Done")
     return
 
 bot.run(TOKEN)

@@ -7,7 +7,7 @@ load_dotenv()
 GOOGLEBOT = os.getenv("GOOGLE_BOT_FILE")
 
 gc = pygsheets.authorize(service_account_file=GOOGLEBOT)
-sheet = gc.open('testnaam')
+sheet = gc.open('Players')
 wks = sheet[0]
 df = wks.get_as_df()
 
