@@ -2,6 +2,7 @@ import os
 import disnake
 from dotenv import load_dotenv
 from disnake.ext import commands
+from numpy import true_divide
 import database as db
 import whitelistSpreadsheet as ws
 
@@ -61,22 +62,26 @@ async def check_freeloaders(inter):
     freeloadersString = ""
     guild = disnake.utils.get(bot.guilds, name = GUILD)
     members = [member for member in guild.members]
+    
+    toCheck = []
+    hasWhitelistrole = []
     for member in members:
-        fullname = member.name + "#" + member.discriminator
-        print(fullname)
-        if ws.checkMemberWhitelist(fullname):
-            freeloader = True
-            for role in member.roles:
-                if WHITELISTROLE == role.id:
-                    freeloader = False
-            if (freeloader):
-                freeloaders.append([member.name, member.id])
-                freeloadersString +=  "Name: " + member.name + ", Id: " + str(member.id) + "\n"
+        discordName = member.name + "#" + member.discriminator
+        toCheck.append(discordName)
+        for role in member.roles:
+            if WHITELISTROLE == role.id:
+                hasWhitelistrole.append(discordName)
+
+    hasWhitelist = ws.checkListWhitelist(toCheck)
+
+    for user in hasWhitelist:
+        if (not (user in hasWhitelistrole)):
+            freeloaders.append([member.name, member.id])
+            freeloadersString +=  "Name: " + user
+
     embeded = disnake.Embed(title=  "Freeloaders:", description=freeloadersString)
 
     await inter.followup.send(embed = embeded)
-
-    print(freeloader)
     return
 
 
