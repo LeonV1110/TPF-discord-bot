@@ -21,15 +21,6 @@ bot = commands.Bot(intents = intents, command_prefix='/')
 @bot.event
 async def on_ready():
     print(f"We're logged in as {bot.user}")
-"""
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return
-    
-    if message.content == "hello":
-        await message.channel.send('Hello!')
-"""
 
 @bot.slash_command(description="Link your steam64ID with your discord account in our database")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
