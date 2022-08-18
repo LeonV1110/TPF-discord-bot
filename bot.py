@@ -5,6 +5,7 @@ from disnake.ext import commands
 from numpy import true_divide
 import database as db
 import whitelistSpreadsheet as ws
+import pandas as pd
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -79,7 +80,10 @@ async def check_freeloaders(inter):
             freeloaders.append([member.name, member.id])
             freeloadersString +=  "Name: " + user
 
-    embeded = disnake.Embed(title=  "Freeloaders:", description=freeloadersString)
+    if (len(freeloaders) == 0):
+        embeded = disnake.Embed(title = "No Freeloaders detected!")
+    else:
+        embeded = disnake.Embed(title=  "Freeloaders:", description=freeloadersString)
 
     await inter.followup.send(embed = embeded)
     return
@@ -105,6 +109,24 @@ async def get_whitelist_id(inter):
     new = await inter.followup()
     await new.response.send_message("test")
     #await inter.followup.send("Done")
+    return
+
+@bot.slash_command(description="")
+@commands.default_member_permissions(kick_members=True, manage_roles=True)
+async def link_name_to_dis_id(inter):
+    users = ws.getUsernameSteamIDDisID() #Pandas dataframe
+    guild = disnake.utils.get(bot.guilds, name = GUILD)
+    members = [member for member in guild.members]
+    print (users)
+    #TODO
+    return
+
+@bot.slash_command(description="checks how many people are whitelisted in the sheet")
+@commands.default_member_permissions(kick_members=True, manage_roles=True)
+async def count_whitelist(inter):
+    res = ws.countWhitelist()
+    embed = disnake.Embed(title = "We currently have " + str(res) + " people in the whitelist document")
+    await inter.response.send_message(embed = embed)
     return
 
 bot.run(TOKEN)

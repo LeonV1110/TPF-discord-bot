@@ -39,3 +39,14 @@ def checkMemberWhitelist(discordName, df):
     elif not (user.steamid.empty):
         return True
     return False
+
+
+def getUsernameSteamIDDisID():
+    df = opensheet()
+    users = df[['discord username', 'steamid', 'DiscordID']]
+    return users
+
+def countWhitelist():
+    df = opensheet()
+    whitelisters = df.loc[df['group'] == 'whitelist']
+    return len(whitelisters)
