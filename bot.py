@@ -74,7 +74,7 @@ async def check_freeloaders(inter):
                 freeloadersString +=  "Name: " + member.name + ", Id: " + str(member.id) + "\n"
     embeded = disnake.Embed(title=  "Freeloaders:", description=freeloadersString)
 
-    await inter.followup.send(freeloadersString)
+    await inter.followup.send(embed = embeded)
 
     print(freeloader)
     return
