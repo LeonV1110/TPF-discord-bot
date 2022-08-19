@@ -6,6 +6,7 @@ from numpy import true_divide
 import database as db
 import whitelistSpreadsheet as ws
 import pandas as pd
+import helper as hlp
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -18,7 +19,7 @@ intents.members = True
 intents.message_content = True
 bot = commands.Bot(intents = intents, command_prefix='/')
 
-#log in the bot
+#logs in the bot
 @bot.event
 async def on_ready():
     print(f"We're logged in as {bot.user}")
@@ -26,9 +27,21 @@ async def on_ready():
 #
 @bot.slash_command(description="Link your steam64ID with your discord account in our database")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
-async def register(inter, steam64id: int):
-    print (steam64id)
-    #await do something in a database
+async def register(inter, steam64id: str):
+    checkID = hlp.checkSteam64ID(steam64id)
+    if (not checkID == "suc6"):
+        await inter.response.send_message(checkID)
+        return
+
+    int(steam64id)
+    whitelist = False
+    discordid = inter.author.id
+    roles = inter.author.roles
+    for role in roles:
+        if role.id == WHITELISTROLE:
+            whitelist = True
+    db.inputNewPlayer(discordid, steam64id, whitelist)
+    
     await inter.response.send_message("suc6")
 
 
