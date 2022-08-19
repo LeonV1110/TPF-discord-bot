@@ -6,3 +6,5 @@ dependencies:
     dotenv
     pygsheets
     pandas
+    PyMySQL
+    PyMySQL[rsa]

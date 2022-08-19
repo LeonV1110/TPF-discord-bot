@@ -18,10 +18,12 @@ intents.members = True
 intents.message_content = True
 bot = commands.Bot(intents = intents, command_prefix='/')
 
+#log in the bot
 @bot.event
 async def on_ready():
     print(f"We're logged in as {bot.user}")
 
+#
 @bot.slash_command(description="Link your steam64ID with your discord account in our database")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def register(inter, steam64id: int):
