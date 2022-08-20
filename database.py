@@ -1,6 +1,8 @@
+import re
 from dotenv import load_dotenv
 import os
 import pymysql as mySQL
+import errors as err
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -21,8 +23,7 @@ def addWhitelist():
     #TODO
 
 def getWhitelistStatus(discordId, TPFID):
-    connection = connectDatabase()
-    with connection:
+    with connectDatabase() as connection:
         with connection.cursor() as cursor:
             sql = "SELECT * FROM `player` WHERE `TPFID` = %s"
             cursor.execute(sql, TPFID)
@@ -30,11 +31,51 @@ def getWhitelistStatus(discordId, TPFID):
         connection.commit()
     return bool(result['Whitelist'])
 
-def inputNewPlayer(discordId, Steam64ID, whitelist):
-    connection = connectDatabase()
-    with connection:
+def inputNewPlayer(discordID, steam64ID, whitelist):
+    with connectDatabase() as connection:
         with connection.cursor() as cursor:
             sql = "INSERT INTO `player` (`Steam64ID`, `DiscordID`, `Whitelist` ) VALUES (%s, %s, %s)"
-            cursor.execute(sql, (int(Steam64ID),int(discordId),int(whitelist)))
+            cursor.execute(sql, (int(steam64ID),int(discordID),int(whitelist)))
+        with connection.cursor() as cursor:
+            sql = "SELECT `TPFID` FROM `player` WHERE `Steam64ID` = %s"
+            cursor.execute(sql, int(steam64ID))
+            result = cursor.fetchone()
+            
         connection.commit()
-    return
+    return result['TPFID']
+
+def checkSteamIDPressence(steam64ID):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `player` WHERE `Steam64ID` = %s"
+            cursor.execute(sql, steam64ID)
+        connection.commit()
+        result = cursor.fetchone()
+    return bool(result)
+
+def checkDiscordIDPressence(discordID):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `player` WHERE `DiscordID` = %s"
+            cursor.execute(sql, discordID)
+        connection.commit()
+        result = cursor.fetchone()
+    return bool(result)
+
+def getPlayerByTPFID(TPFID):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `player` WHERE `TPFID` = %s"
+            cursor.execute(sql, TPFID)
+            result = cursor.fetchone()
+        connection.commit()
+    return result
+
+def getPlayerByDiscordID(discordID):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `player` WHERE `DiscordID` = %s"
+            cursor.execute(sql, discordID)
+            result = cursor.fetchone()
+        connection.commit()
+    return result

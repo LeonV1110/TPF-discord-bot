@@ -1,3 +1,6 @@
+import database as db
+import errors as err
+
 def checkSteam64ID(steamID):
     #check if int
     try:
@@ -12,4 +15,13 @@ def checkSteam64ID(steamID):
     if (not stringID[0:7] == "7656119"):
         return "This is not a valid steam64ID."
 
+    #TODO check the length
     return "suc6"
+
+def checkDuplicateUser(steamID, disID):
+    if db.checkSteamIDPressence(steamID):
+        raise err.DuplicatePlayerPresent(steamID, disID)
+    elif db.checkDiscordIDPressence(disID):
+        raise err.DuplicatePlayerPresent(steamID, disID)
+    else:
+        return
