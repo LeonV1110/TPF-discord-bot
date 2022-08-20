@@ -107,3 +107,15 @@ def inputNewPlayer(discordID, steam64ID, whitelist, name):
             
         connection.commit()
     return result['TPFID']
+
+##############################
+######### deleters ###########
+##############################
+
+def deletePlayer(discordID):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "DELETE FROM `player` WHERE `DiscordID` = %s"
+            cursor.execute(sql, discordID)
+        connection.commit()
+    return 

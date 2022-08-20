@@ -33,7 +33,10 @@ async def on_member_update(before, after):
 @bot.event #TODO test
 async def on_member_remove(member):
     player = pl.DatabasePlayer(member.id)
-    player.updateWhitelist(False)
+    try:
+        player.updateWhitelist(False)
+    except err.PlayerNotFound:
+        return
 
 #########################################
 ########   Player Commands    ###########
@@ -80,6 +83,15 @@ async def update_whitelist(inter):
     embed = disnake.Embed(title= response)
     await inter.response.send_message(embed = embed, ephemeral = True)
     return
+
+@bot.slash_command(description="Deletes your entry from our database, this will also remove your whitelist.")
+@commands.default_member_permissions(kick_members=True, manage_roles=True)
+async def remove_from_database(inter):
+    discordID = inter.author.id
+    player = pl.DatabasePlayer(discordID)
+    player.deletePlayerFromDB
+    embed = disnake.Embed(title="You have been sucessfully deleted from the database")
+    await inter.response.send_message(embed = embed, ephemeral = True)
 
 #########################################
 ########   Admin Commands    ############
