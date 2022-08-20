@@ -43,17 +43,26 @@ def getPlayerByDiscordID(discordID):
     else:
         raise err.PlayerNotFound()
 
-def getWhitelistStatus(discordId, TPFID):
+def getWhitelistStatus(discordId):
     with connectDatabase() as connection:
         with connection.cursor() as cursor:
-            sql = "SELECT * FROM `player` WHERE `TPFID` = %s"
-            cursor.execute(sql, TPFID)
+            sql = "SELECT * FROM `player` WHERE `DiscordID` = %s"
+            cursor.execute(sql, discordId)
             result = cursor.fetchone()
         connection.commit()
     return bool(result['Whitelist'])
 
+def getAllWhitelisters():
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `player` WHERE `Whitelist` = True"
+            cursor.execute(sql)
+            result = cursor.fetchall()
+        connection.commit()
+    return result
+    
 #############################
-######### checkers ###########
+######### checkers ##########
 #############################
 
 def checkSteamIDPressence(steam64ID):
@@ -86,11 +95,11 @@ def updateWhitelist(whitelist, steam64ID, discordID):
         connection.commit()
     return
 
-def inputNewPlayer(discordID, steam64ID, whitelist):
+def inputNewPlayer(discordID, steam64ID, whitelist, name):
     with connectDatabase() as connection:
         with connection.cursor() as cursor:
-            sql = "INSERT INTO `player` (`Steam64ID`, `DiscordID`, `Whitelist` ) VALUES (%s, %s, %s)"
-            cursor.execute(sql, (int(steam64ID),int(discordID),int(whitelist)))
+            sql = "INSERT INTO `player` (`Steam64ID`, `DiscordID`, `Whitelist`, `Name`) VALUES (%s, %s, %s, %s)"
+            cursor.execute(sql, (steam64ID,discordID,whitelist, name))
         with connection.cursor() as cursor:
             sql = "SELECT `TPFID` FROM `player` WHERE `Steam64ID` = %s"
             cursor.execute(sql, int(steam64ID))

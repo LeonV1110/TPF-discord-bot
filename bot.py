@@ -24,6 +24,17 @@ bot = commands.Bot(intents = intents, command_prefix='/')
 async def on_ready():
     print(f"We're logged in as {bot.user}")
 
+#update whitelist when roles change
+@bot.event
+async def on_member_update(before, after):
+    hlp.updateWhitelist(after)
+
+#remove whitelist when they leave the server
+@bot.event #TODO test
+async def on_member_remove(member):
+    player = pl.DatabasePlayer(member.id)
+    player.updateWhitelist(False)
+
 #########################################
 ########   Player Commands    ###########
 #########################################
@@ -37,13 +48,14 @@ async def register(inter, steam64id: str):
         checkID = hlp.checkSteam64ID(steam64id)
         if (not checkID =="suc6"):
             embed = disnake.Embed(title = checkID)
-            await inter.followup.send(embed = embed)
+            await inter.followup.send(embed = embed, ephemeral = True)
             return
         
         steam64ID = int(steam64id)
         discordID = inter.author.id
         whitelist = False
-        roles = inter.author.roles        
+        roles = inter.author.roles 
+        name = inter.author.name + "#" + inter.author.discriminator
         for role in roles:
             if role.id == WHITELISTROLE:
                 whitelist = True
@@ -51,36 +63,22 @@ async def register(inter, steam64id: str):
             hlp.checkDuplicateUser(steam64ID, discordID)
         except err.DuplicatePlayerPresent:
             embed = disnake.Embed(title = "There already exists a user with your steam64ID or discordID")
-            await inter.followup.send(embed = embed)
+            await inter.followup.send(embed = embed, ephemeral = True)
             return
-        player = pl.DiscordPlayer(discordID= discordID, steam64ID=steam64ID, whitelist= whitelist)
+        player = pl.DiscordPlayer(discordID= discordID, steam64ID=steam64ID, whitelist= whitelist, name = name)
         player.playerToDB()
         embed = disnake.Embed(title = "Registration was sucessfull")
-        await inter.followup.send(embed = embed)
+        await inter.followup.send(embed = embed, ephemeral = True)
 
 
 #updates the whitelist of the user using it
 @bot.slash_command(description="manually intiates a whitelist update")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def update_whitelist(inter):
-    discordID = inter.author.id
-    try:
-        player = pl.DatabasePlayer(discordID)
-    except err.PlayerNotFound:
-        embed = disnake.Embed(title = "You are not in our database, please register instead")
-        await inter.response.send_message(embed = embed)
-    
-    roles = inter.author.roles
-    response = "I wasn't able to find a whitelist role on your user, are you sure that you have connected your patreon to discord?"
-
-    for role in roles:
-        if role.id == WHITELISTROLE:
-            player.updateWhitelist(True)
-            response = "You have recieved whitelist, thanks for suporting us!"
-        else:
-            player.updateWhitelist(False)
+    member = inter.author
+    response = hlp.checkWhitelist(member)
     embed = disnake.Embed(title= response)
-    await inter.response.send_message(embed = embed)
+    await inter.response.send_message(embed = embed, ephemeral = True)
     return
 
 #########################################
@@ -119,7 +117,7 @@ async def check_freeloaders(inter):
     else:
         embeded = disnake.Embed(title=  "Freeloaders:", description=freeloadersString)
 
-    await inter.followup.send(embed = embeded)
+    await inter.followup.send(embed = embeded, ephemeral = True)
     return
 
 #########################################
@@ -143,7 +141,7 @@ async def get_whitelist_id(inter):
     await inter.response.send_message("test")
     print(inter.token)
     #await inter.response.defer()
-    new = await inter.followup()
+    new = await inter.followup(ephemeral = True)
     await new.response.send_message("test")
     #await inter.followup.send("Done")
     return
