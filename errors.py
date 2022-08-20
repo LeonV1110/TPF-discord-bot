@@ -9,5 +9,4 @@ class DuplicatePlayerPresent(Exception):
         return "Dis: " + str(self.discordID) + " Steam: " + str(self.steam64ID) + self.message
 
 class PlayerNotFound(Exception):
-    def __init__(self):
-        return #TODO
+    pass

@@ -2,6 +2,7 @@ import database as db
 import errors as err
 
 def checkSteam64ID(steamID):
+    
     #check if int
     try:
         int(steamID)
@@ -14,8 +15,12 @@ def checkSteam64ID(steamID):
     #check if first numbers match
     if (not stringID[0:7] == "7656119"):
         return "This is not a valid steam64ID."
-
-    #TODO check the length
+    #check the length
+    if (len(str(steamID)) < 17):
+        return "This is not a valid steam64ID, as it is shorter."
+    if (len(str(steamID)) > 17):
+        return "This is not a valid steam64ID, as it is longer."
+    
     return "suc6"
 
 def checkDuplicateUser(steamID, disID):

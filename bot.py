@@ -2,8 +2,6 @@ import os
 import disnake
 from dotenv import load_dotenv
 from disnake.ext import commands
-from numpy import true_divide
-import database as db
 import whitelistSpreadsheet as ws
 import pandas as pd
 import helper as hlp
@@ -66,7 +64,12 @@ async def register(inter, steam64id: str):
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def update_whitelist(inter):
     discordID = inter.author.id
-    player = pl.DatabasePlayer(discordID)
+    try:
+        player = pl.DatabasePlayer(discordID)
+    except err.PlayerNotFound:
+        embed = disnake.Embed(title = "You are not in our database, please register instead")
+        await inter.response.send_message(embed = embed)
+    
     roles = inter.author.roles
     response = "I wasn't able to find a whitelist role on your user, are you sure that you have connected your patreon to discord?"
 
@@ -74,6 +77,8 @@ async def update_whitelist(inter):
         if role.id == WHITELISTROLE:
             player.updateWhitelist(True)
             response = "You have recieved whitelist, thanks for suporting us!"
+        else:
+            player.updateWhitelist(False)
     embed = disnake.Embed(title= response)
     await inter.response.send_message(embed = embed)
     return
@@ -82,7 +87,7 @@ async def update_whitelist(inter):
 ########   Admin Commands    ############
 #########################################
 
-@bot.slash_command(description="Checks if anyone has whitelist while not having an appropiate role") #TODO, make sure this is only visable to admins
+@bot.slash_command(description="Checks if anyone has whitelist while not having an appropiate role")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def check_freeloaders(inter):
 
