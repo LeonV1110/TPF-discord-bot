@@ -10,8 +10,8 @@ class Player:
         self.whitelist = whitelist
         db.updateWhitelist(self.whitelist, self.steam64ID, self.discordID)
     
-    def deletePlayerFromDB(self, discordID):
-        db.deletePlayer(discordID)
+    def deletePlayerFromDB(self):
+        db.deletePlayer(self.discordID)
 
 class DiscordPlayer(Player):
     def __init__(self, discordID, steam64ID, whitelist, name):

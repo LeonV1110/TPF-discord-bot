@@ -17,7 +17,7 @@ def checkSteam64ID(steamID):
     except:
         return "A steam64ID contains just numbers."
     #check if not default steam64ID
-    if (steamID == 76561197960287930):
+    if (steamID == str(76561197960287930)):
         return "This is Gabe Newell's steam64ID, please make sure to enter yours."
     stringID = str(steamID)
     #check if first numbers match

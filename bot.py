@@ -32,8 +32,8 @@ async def on_member_update(before, after):
 #remove whitelist when they leave the server
 @bot.event #TODO test
 async def on_member_remove(member):
-    player = pl.DatabasePlayer(member.id)
     try:
+        player = pl.DatabasePlayer(member.id)
         player.updateWhitelist(False)
     except err.PlayerNotFound:
         return
@@ -47,7 +47,7 @@ async def on_member_remove(member):
 @bot.slash_command(discription = "Link your steam64ID with your discord account in our database")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def register(inter, steam64id: str):
-        await inter.response.defer()
+        await inter.response.defer(ephemeral = True)
         checkID = hlp.checkSteam64ID(steam64id)
         if (not checkID =="suc6"):
             embed = disnake.Embed(title = checkID)
@@ -70,7 +70,7 @@ async def register(inter, steam64id: str):
             return
         player = pl.DiscordPlayer(discordID= discordID, steam64ID=steam64ID, whitelist= whitelist, name = name)
         player.playerToDB()
-        embed = disnake.Embed(title = "Registration was sucessfull")
+        embed = disnake.Embed(title = "Registration was successful")
         await inter.followup.send(embed = embed, ephemeral = True)
 
 
@@ -79,18 +79,24 @@ async def register(inter, steam64id: str):
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def update_whitelist(inter):
     member = inter.author
-    response = hlp.checkWhitelist(member)
+    response = hlp.updateWhitelist(member)
     embed = disnake.Embed(title= response)
     await inter.response.send_message(embed = embed, ephemeral = True)
     return
 
+#removes a players own entry from the database
 @bot.slash_command(description="Deletes your entry from our database, this will also remove your whitelist.")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def remove_from_database(inter):
     discordID = inter.author.id
-    player = pl.DatabasePlayer(discordID)
-    player.deletePlayerFromDB
-    embed = disnake.Embed(title="You have been sucessfully deleted from the database")
+    try:
+        player = pl.DatabasePlayer(discordID)
+    except err.PlayerNotFound:
+        embed = disnake.Embed(title = "You weren't in the database to begin with")
+        await inter.response.send_message(embed = embed, ephemeral = True)
+        return
+    player.deletePlayerFromDB()
+    embed = disnake.Embed(title="You have been successfully deleted from the database")
     await inter.response.send_message(embed = embed, ephemeral = True)
 
 #########################################
@@ -155,7 +161,6 @@ async def get_whitelist_id(inter):
     #await inter.response.defer()
     new = await inter.followup(ephemeral = True)
     await new.response.send_message("test")
-    #await inter.followup.send("Done")
     return
 
 @bot.slash_command(description="checks how many people are whitelisted in the sheet")
