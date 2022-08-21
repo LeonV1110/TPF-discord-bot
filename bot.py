@@ -149,7 +149,6 @@ async def test_tpf(inter):
     print(memberID)
     test = inter.author.discriminator
     print(test)
-    
     await inter.response.send_message("testing in progress")
 
 @bot.slash_command(description="")
@@ -171,4 +170,40 @@ async def count_whitelist(inter):
     await inter.response.send_message(embed = embed)
     return
 
+@bot.slash_command(description="imports the old players in the spreadsheet to the database")
+@commands.default_member_permissions(kick_members=True, manage_roles=True)
+async def import_from_spreadsheet(inter):
+    df = ws.opensheet()
+    length = len(df)
+    nameSeries = df['discord username'].squeeze()
+    steam64IDSeries = df['steamid'].squeeze()
+    discordIDSeries = df['DiscordID'].squeeze()
+    group = df['group']
+
+    for i in range(length):
+        if (group.at[i] == 'whitelist'):
+            name = nameSeries.at[i]
+            discordID = discordIDSeries.at[i]
+            steam64ID = steam64IDSeries.at[i]
+            player = pl.DiscordPlayer(discordID, steam64ID, True, name)
+            player.playerToDB()
+            #TODO, allow for people to be missing their discordID
+    return
+
+@bot.slash_command(description="add the discordID to anyone in the spreadsheet")
+@commands.default_member_permissions(kick_members=True, manage_roles=True)
+async def update_discordid_spreadsheet(inter):
+    await inter.response.defer()
+    wks = ws.openWks()
+    guild = disnake.utils.get(bot.guilds, name = GUILD)
+    members = [member for member in guild.members]
+    
+    for member in members:
+        discordName = member.name + "#" + member.discriminator
+        discordID = member.id
+        ws.updateDiscordID(wks, discordName, discordID)
+    embed = disnake.Embed(title= "Updated")
+    await inter.followup.send(embed = embed)
+
+    return
 bot.run(TOKEN)

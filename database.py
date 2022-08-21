@@ -108,6 +108,14 @@ def inputNewPlayer(discordID, steam64ID, whitelist, name):
         connection.commit()
     return result['TPFID']
 
+def updateDiscordID(discordID, TPFID):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "UPDATE `player` SET `DiscordID` = %s WHERE `TPFID` = %s"
+            cursor.execute(sql, (discordID, TPFID))
+        connection.commit()
+    return
+
 ##############################
 ######### deleters ###########
 ##############################

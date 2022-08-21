@@ -40,6 +40,23 @@ def checkMemberWhitelist(discordName, df):
         return True
     return False
 
+def openWks():
+    gc = pygsheets.authorize(service_account_file=GOOGLEBOT)
+    sheet = gc.open('Players')
+    wks = sheet[0]
+    return wks
+
+def updateDiscordID(wks, discordName, discordID):
+    
+    cell = wks.find(discordName, cols= (6,6) )
+    if (not cell): return #check if the user is in the database
+    
+    row = cell[0].row
+    addr = "k" + str(row)
+    print(addr)
+    wks.update_value(addr, str(discordID))
+    return
+
 
 def getUsernameSteamIDDisID():
     df = opensheet()
@@ -50,3 +67,8 @@ def countWhitelist():
     df = opensheet()
     whitelisters = df.loc[df['group'] == 'whitelist']
     return len(whitelisters)
+
+def getAllWhitelist():
+    df = opensheet()
+    whitelisters = df.loc[df['group'] == 'whitelist']
+    return whitelisters

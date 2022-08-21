@@ -1,4 +1,5 @@
 import database as db
+import whitelistDoc as wd
 
 class Player:
 
@@ -9,6 +10,7 @@ class Player:
     def updateWhitelist(self, whitelist):
         self.whitelist = whitelist
         db.updateWhitelist(self.whitelist, self.steam64ID, self.discordID)
+        wd.createWhitelistDoc()
     
     def deletePlayerFromDB(self):
         db.deletePlayer(self.discordID)
