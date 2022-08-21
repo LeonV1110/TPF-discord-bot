@@ -48,12 +48,6 @@ async def on_member_remove(member):
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def register(inter, steam64id: str):
         await inter.response.defer(ephemeral = True)
-        checkID = hlp.checkSteam64ID(steam64id)
-        if (not checkID =="suc6"):
-            embed = disnake.Embed(title = checkID)
-            await inter.followup.send(embed = embed, ephemeral = True)
-            return
-        
         steam64ID = int(steam64id)
         discordID = inter.author.id
         whitelist = False
@@ -62,14 +56,21 @@ async def register(inter, steam64id: str):
         for role in roles:
             if role.id == WHITELISTROLE:
                 whitelist = True
+        try:
+            player = pl.DiscordPlayer(discordID= discordID, steam64ID=steam64ID, whitelist= whitelist, name = name)
+        except err.InvalidSteam64ID as error:
+            embed = disnake.Embed(title= error.message)
+            await inter.followup.send(embed = embed, ephemeral = True)
+            return
+        
         try: 
-            hlp.checkDuplicateUser(steam64ID, discordID)
+            player.playerToDB()
         except err.DuplicatePlayerPresent:
             embed = disnake.Embed(title = "There already exists a user with your steam64ID or discordID")
             await inter.followup.send(embed = embed, ephemeral = True)
             return
-        player = pl.DiscordPlayer(discordID= discordID, steam64ID=steam64ID, whitelist= whitelist, name = name)
-        player.playerToDB()
+        
+        
         embed = disnake.Embed(title = "Registration was successful")
         await inter.followup.send(embed = embed, ephemeral = True)
 
@@ -103,7 +104,31 @@ async def remove_from_database(inter):
 ########   Admin Commands    ############
 #########################################
 
-@bot.slash_command(description="Checks if anyone has whitelist while not having an appropiate role")
+@bot.slash_command(description="Updates all whitelists for everyone")
+@commands.default_member_permissions(kick_members=True, manage_roles=True)
+async def update_all_whitelists(inter):
+    guild = disnake.utils.get(bot.guilds, name = GUILD)
+    members = [member for member in guild.members]
+    hasWhitelistrole = []
+    for member in members:
+        for role in member.roles:
+            if WHITELISTROLE == role.id:
+                try: 
+                    player = pl.DatabasePlayer(member.id)
+                    player.updateWhitelist(True)
+                except err.PlayerNotFound:
+                    print(member.name +"#" + member.discriminator + " was not found in the database")
+                    return
+            else:
+                try: 
+                    player = pl.DatabasePlayer(member.id)
+                    player.updateWhitelist(False)
+                except err.PlayerNotFound:
+                    print(member.name +"#" + member.discriminator + " was not found in the database")
+                    return
+    return
+
+@bot.slash_command(description="Checks in the spreadsheet if anyone has whitelist while not having an appropiate role")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def check_freeloaders(inter):
 
@@ -173,6 +198,8 @@ async def count_whitelist(inter):
 @bot.slash_command(description="imports the old players in the spreadsheet to the database")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def import_from_spreadsheet(inter):
+    await inter.response.defer()
+
     df = ws.opensheet()
     length = len(df)
     nameSeries = df['discord username'].squeeze()
@@ -185,8 +212,16 @@ async def import_from_spreadsheet(inter):
             name = nameSeries.at[i]
             discordID = discordIDSeries.at[i]
             steam64ID = steam64IDSeries.at[i]
-            player = pl.DiscordPlayer(discordID, steam64ID, True, name)
-            player.playerToDB()
+            #print(type(discordID))
+            if (isinstance(discordID, int)):
+                print(discordID)
+                try:
+                    player = pl.DiscordPlayer(discordID, steam64ID, True, name)
+                    player.playerToDB()
+                except: 
+                    pass
+    embed = disnake.Embed(title="Did something, may have crashed regardless")
+    await inter.followup.send(embed = embed)
             #TODO, allow for people to be missing their discordID
     return
 
@@ -197,8 +232,13 @@ async def update_discordid_spreadsheet(inter):
     wks = ws.openWks()
     guild = disnake.utils.get(bot.guilds, name = GUILD)
     members = [member for member in guild.members]
-    
+    hasWhitelistrole = []
     for member in members:
+        for role in member.roles:
+            if WHITELISTROLE == role.id:
+                hasWhitelistrole.append(member)
+
+    for member in hasWhitelistrole:
         discordName = member.name + "#" + member.discriminator
         discordID = member.id
         ws.updateDiscordID(wks, discordName, discordID)

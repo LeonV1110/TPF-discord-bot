@@ -10,3 +10,8 @@ class DuplicatePlayerPresent(Exception):
 
 class PlayerNotFound(Exception):
     pass
+
+class InvalidSteam64ID(Exception):
+    def __init__(self, message = "This is not a valid steam64ID"):
+        self.message = message
+        super().__init__(self.message)
