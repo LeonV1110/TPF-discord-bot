@@ -30,7 +30,7 @@ async def on_member_update(before, after):
     hlp.updateWhitelist(after)
 
 #remove whitelist when they leave the server
-@bot.event #TODO test
+@bot.event
 async def on_member_remove(member):
     try:
         player = pl.DatabasePlayer(member.id)
@@ -48,7 +48,6 @@ async def on_member_remove(member):
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def register(inter, steam64id: str):
         await inter.response.defer(ephemeral = True)
-        steam64ID = int(steam64id)
         discordID = inter.author.id
         whitelist = False
         roles = inter.author.roles 
@@ -57,7 +56,7 @@ async def register(inter, steam64id: str):
             if role.id == WHITELISTROLE:
                 whitelist = True
         try:
-            player = pl.DiscordPlayer(discordID= discordID, steam64ID=steam64ID, whitelist= whitelist, name = name)
+            player = pl.DiscordPlayer(discordID= discordID, steam64ID=steam64id, whitelist= whitelist, name = name)
         except err.InvalidSteam64ID as error:
             embed = disnake.Embed(title= error.message)
             await inter.followup.send(embed = embed, ephemeral = True)
@@ -105,27 +104,34 @@ async def remove_from_database(inter):
 #########################################
 
 @bot.slash_command(description="Updates all whitelists for everyone")
-@commands.default_member_permissions(kick_members=True, manage_roles=True)
+@commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def update_all_whitelists(inter):
+    await inter.response.defer()
+    
     guild = disnake.utils.get(bot.guilds, name = GUILD)
     members = [member for member in guild.members]
-    hasWhitelistrole = []
+
     for member in members:
+        whitelist = False
         for role in member.roles:
             if WHITELISTROLE == role.id:
-                try: 
-                    player = pl.DatabasePlayer(member.id)
-                    player.updateWhitelist(True)
-                except err.PlayerNotFound:
-                    print(member.name +"#" + member.discriminator + " was not found in the database")
-                    return
-            else:
-                try: 
-                    player = pl.DatabasePlayer(member.id)
-                    player.updateWhitelist(False)
-                except err.PlayerNotFound:
-                    print(member.name +"#" + member.discriminator + " was not found in the database")
-                    return
+                whitelist = True
+            
+        if whitelist:
+            try: 
+                player = pl.DatabasePlayer(member.id)
+                player.updateWhitelist(True)
+            except err.PlayerNotFound:
+                print(member.name +"#" + member.discriminator + " was not found in the database")
+        else:
+            try: 
+                player = pl.DatabasePlayer(member.id)
+                player.updateWhitelist(False)
+            except err.PlayerNotFound:
+                print(member.name +"#" + member.discriminator + " was not found in the database")
+
+    embed = disnake.Embed(title = "Done")
+    await inter.followup.send(embed = embed)
     return
 
 @bot.slash_command(description="Checks in the spreadsheet if anyone has whitelist while not having an appropiate role")
@@ -168,7 +174,7 @@ async def check_freeloaders(inter):
 #########################################
 
 @bot.slash_command(description="")
-@commands.default_member_permissions(kick_members=True, manage_roles=True)
+@commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def test_tpf(inter):
     memberID = inter.author.id
     print(memberID)
@@ -177,7 +183,7 @@ async def test_tpf(inter):
     await inter.response.send_message("testing in progress")
 
 @bot.slash_command(description="")
-@commands.default_member_permissions(kick_members=True, manage_roles=True)
+@commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def get_whitelist_id(inter):
     print(inter.author.roles)
     await inter.response.send_message("test")
@@ -190,13 +196,14 @@ async def get_whitelist_id(inter):
 @bot.slash_command(description="checks how many people are whitelisted in the sheet")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def count_whitelist(inter):
+    await inter.response.defer()
     res = ws.countWhitelist()
     embed = disnake.Embed(title = "We currently have " + str(res) + " people in the whitelist document")
-    await inter.response.send_message(embed = embed)
+    await inter.followup.send(embed = embed)
     return
 
 @bot.slash_command(description="imports the old players in the spreadsheet to the database")
-@commands.default_member_permissions(kick_members=True, manage_roles=True)
+@commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def import_from_spreadsheet(inter):
     await inter.response.defer()
 
@@ -226,7 +233,7 @@ async def import_from_spreadsheet(inter):
     return
 
 @bot.slash_command(description="add the discordID to anyone in the spreadsheet")
-@commands.default_member_permissions(kick_members=True, manage_roles=True)
+@commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def update_discordid_spreadsheet(inter):
     await inter.response.defer()
     wks = ws.openWks()
