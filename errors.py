@@ -9,9 +9,16 @@ class DuplicatePlayerPresent(Exception):
         return "Dis: " + str(self.discordID) + " Steam: " + str(self.steam64ID) + self.message
 
 class PlayerNotFound(Exception):
-    pass
+    def __init__(self, message = "Player was not found"):
+        self.message = message
+        super().__init__(self.message)
 
 class InvalidSteam64ID(Exception):
     def __init__(self, message = "This is not a valid steam64ID"):
+        self.message = message
+        super().__init__(self.message)
+
+class InvalidRole(Exception):
+    def __init__(self, message = "This is not a valid role"):
         self.message = message
         super().__init__(self.message)
