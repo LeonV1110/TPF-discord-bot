@@ -976,3 +976,4 @@ Admin=76561198073979176:whitelist //1083 - added by TPFbot
 Admin=76561198099982640:whitelist //1084 - added by TPFbot 
 Admin=76561198046948651:whitelist //1085 - added by TPFbot 
 Admin=76561198010935407:whitelist //1086 - added by TPFbot 
+Admin=76561198272190934:whitelist //1096 - added by TPFbot 
