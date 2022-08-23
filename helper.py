@@ -5,9 +5,6 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD = os.getenv('DISCORD_GUILD')
-GUILDID = int(os.getenv('DISCORD_GUILD_ID'))
 WHITELISTROLE = int(os.getenv('WHITELIST_ROLE'))
 
 def checkSteam64ID(steamID):
@@ -30,29 +27,40 @@ def checkSteam64ID(steamID):
         raise err.InvalidSteam64ID("This is not a valid steam64ID, as it is longer than 17 characters.")
     return
 
+def checkRole(role):
+    valid = ["whitelist", "nothing"]
+    if role in valid:
+        return
+    else:
+        raise err.InvalidRole()
 
-def checkDuplicateUser(steamID, disID):
-    if db.checkSteamIDPressence(steamID):
-        raise err.DuplicatePlayerPresent(steamID, disID)
-    elif db.checkDiscordIDPressence(disID):
-        raise err.DuplicatePlayerPresent(steamID, disID)
+def checkDuplicateUser(steam64ID, discordID):
+    if db.checkDiscordIDPressence(discordID):
+        raise err.DuplicatePlayerPresent("This discordID is already in use")
+    elif db.checkSteamIDPressence(steam64ID):
+        raise err.DuplicatePlayerPresent("This steam64ID is already in use")
     else:
         return
+
+def updateRoles(member):
+    whitelist = updateWhitelist(member)
+    return whitelist
+
 
 def updateWhitelist(member):
     discordID = member.id
     try:
         player = pl.DatabasePlayer(discordID)
-    except err.PlayerNotFound:
-        return "You are not in our database, please register instead"
+    except err.PlayerNotFound as error:
+        return error.message
     
-    roles = member.roles
+    discordRoles = member.roles
     res = "I wasn't able to find a whitelist role on your user, are you sure that you have connected your patreon to discord?"
-    whitelist = False
-    for role in roles:
-        if role.id == WHITELISTROLE:
-            whitelist = True
+    role = "nothing"
+    for discordRole in discordRoles:
+        if discordRole.id == WHITELISTROLE:
+            role = "whitelist"
             res = "You have received whitelist, thanks for suporting us!"
-    player.updateWhitelist(whitelist)
-    
+    player.updateRole(role)
+
     return res

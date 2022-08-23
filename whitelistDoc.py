@@ -10,7 +10,7 @@ def createWhitelistString():
     whitelisters = db.getAllWhitelisters()
     result = ""
     for wl in whitelisters:
-        result += createNewLine(wl["Steam64ID"], wl["TPFID"])
+        result += createNewLine(wl["steam64ID"], wl["playerID"])
     return result
 
 def createNewLine(steam64ID, TPFID):
