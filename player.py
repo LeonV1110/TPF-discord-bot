@@ -36,7 +36,7 @@ class DiscordPlayer(Player):
         return
 
 class DatabasePlayer(Player):
-    def __init__(self, discordID = None, steam64ID = None):
+    def __init__(self, discordID):
         player = db.getPlayer(discordID = discordID) #will raise PlayerNotFound exception
         self.steam64ID = player["steam64ID"]
         self.discordID = player["discordID"]

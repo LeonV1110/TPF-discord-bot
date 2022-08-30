@@ -110,7 +110,7 @@ async def remove_myself_from_database(inter):
 #removes a specified players entry from the database
 @bot.slash_command(description="Deletes your entry from our database, this will also remove your whitelist.")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
-async def remove_player_from_database(inter, discordid : str, steam64id : str):
+async def nuke_player(inter, discordid : str, steam64id : str):
     try:
         player = pl.DatabasePlayer(discordid)
         if int(player.steam64ID) != int(steam64id):
