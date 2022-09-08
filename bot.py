@@ -107,6 +107,18 @@ async def remove_myself_from_database(inter):
 ########   Admin Commands    ############
 #########################################
 
+#TODO
+@bot.slash_command(description="")
+@commands.default_member_permissions(kick_members=True, manage_roles=True)
+async def layer_vote(inter, layerone: str, layertwo: str, channel):
+    print(layerone)
+    print(layertwo)
+    print(channel)
+
+    embed = disnake.Embed(title = "test")
+    await inter.response.send_message(embed = embed)
+    return
+
 #removes a specified players entry from the database
 @bot.slash_command(description="Deletes your entry from our database, this will also remove your whitelist.")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
