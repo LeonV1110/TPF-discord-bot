@@ -200,7 +200,48 @@ async def check_freeloaders(inter):
     await inter.followup.send(embed = embeded, ephemeral = True)
     return
 
+#TODO doesn't work with MVP's
+@bot.slash_command(description="Checks in the spreadsheet if anyone has whitelist while not having an appropiate role")
+@commands.default_member_permissions(kick_members=True, manage_roles=True)
+async def import_spreadsheet(inter):
+    await inter.response.defer() 
+    df = ws.opensheet()
+    length = len(df)
+    nameSeries = df['discord username'].squeeze()
+    steam64IDSeries = df['steamid'].squeeze()
+    discordIDSeries = df['DiscordID'].squeeze()
+    group = df['group']
 
+    AllowedRoles = ['whitelist', 'mvp', 'creator', 'caster' ]
+    count = 0
+
+    for i in range(length):
+        role = group.at[i]
+        if (role in AllowedRoles):
+            name = nameSeries.at[i]
+            discordID = discordIDSeries.at[i]
+            steam64ID = steam64IDSeries.at[i]
+            if (isinstance(discordID, int)):
+                try:
+                    print (name)
+                    print (role)
+                    player = pl.DiscordPlayer(discordID, steam64ID, role, name)
+                    
+                    player.playerToDB()
+                except err.DuplicatePlayerPresent:
+                    pass
+                except (err.PlayerNotFound, err.InvalidSteam64ID, err.InvalidRole) as error: 
+                    print(discordID)
+                    print(error.message)
+            else:
+                count += 1
+                print (steam64ID)
+                print("No discordID")
+        
+    print(str(count) + " missing discordID's")
+    await inter.followup.send("Spreadsheet has been imported")
+
+    return
 #########################################
 #######   testing Commands    ###########
 #########################################
@@ -246,7 +287,7 @@ async def setup(inter):
                     role = "whitelist"
                     player = pl.DiscordPlayer(discordID, steam64ID, role, name)
                     player.playerToDB()
-                except (err.PlayerNotFound, err.InvalidSteam64ID, err.InvalidRole) as error: 
+                except (err.DuplicatePlayerPresent, err.PlayerNotFound, err.InvalidSteam64ID, err.InvalidRole) as error: 
                     print(error.message)
 
     await inter.followup.send("Spreadsheet has been imported")

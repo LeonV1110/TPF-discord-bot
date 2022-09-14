@@ -10,9 +10,9 @@ def createWhitelistString():
     whitelisters = db.getAllWhitelisters()
     result = ""
     for wl in whitelisters:
-        result += createNewLine(wl["steam64ID"], wl["playerID"])
+        result += createNewLine(wl["steam64ID"], wl["playerID"], wl["role"])
     return result
 
-def createNewLine(steam64ID, TPFID):
-    line = "Admin=" + str(steam64ID) + ":whitelist //" + str(TPFID) + " - added by TPFbot \n"
+def createNewLine(steam64ID, TPFID, ROLE):
+    line = "Admin=" + str(steam64ID) + ":" + str(ROLE) + " //" + str(TPFID) + " - added by TPFbot \n"
     return line
