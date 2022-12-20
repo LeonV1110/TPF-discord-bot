@@ -3,4 +3,5 @@ __pycache__/
 tpf-bot-a10312bb9a93.json
 .env LM
 .env TPF
+.env copy
 Whitelist doc/WhitelistDoc.txt

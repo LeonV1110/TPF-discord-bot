@@ -65,7 +65,7 @@ async def register(inter, steam64id: str):
     embed = disnake.Embed(title = "Registration was successful")
     try:
         player = pl.DiscordPlayer(discordID, steam64id, role, name)
-    except (err.InvalidSteam64ID, err.InvalidRole )as error:
+    except (err.InvalidSteam64ID, err.InvalidRole ) as error:
         embed = disnake.Embed(title= error.message)
         await inter.followup.send(embed = embed, ephemeral = True)
         return
