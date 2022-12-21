@@ -3,12 +3,13 @@ import disnake
 from dotenv import load_dotenv
 from disnake.ext import commands
 import pandas as pd
-import helper as hlp
-import player as pl
+import helper_new as hlp
+import player_new as pl
 import errors as err
 import whitelistSpreadsheet as ws
-import database as db
+import database_new as db
 import whitelistDoc as wd
+import WhitelistOrder as wo
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -30,10 +31,21 @@ bot = commands.Bot(intents = intents, command_prefix='/')
 async def on_ready():
     print(f"We're logged in as {bot.user}")
 
-#update whitelist when roles change
+#update whitelistorder tier when roles change #TODO: deal with new tier being to low to support all whitelisted players.
 @bot.event
 async def on_member_update(before, after):
-    hlp.updateRoles(after)
+    member = after
+    discordID = member.id
+    try:
+        player = pl.DatabasePlayer(discordID)
+    except err.PlayerNotFound as error:
+        return error.message
+    
+    TPFID = player.TPFID
+    order = wo.DatabaseOrder(TPFID)
+    order.updateOrder(member.roles)
+    return
+
 
 #remove whitelist when they leave the server
 @bot.event

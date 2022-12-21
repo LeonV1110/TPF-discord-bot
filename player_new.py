@@ -8,8 +8,13 @@ from dotenv import load_dotenv
 
 
 load_dotenv()
-WHITELISTROLE = int(os.getenv('WHITELIST_ROLE'))
-# TODO, update to include all patreon roles after the rework
+JUNIORADMINROLE = int(os.getenv('JUNIOR_ADMIN_ROLE'))
+ADMINROLE = int(os.getenv('ADMIN_ROLE'))
+SENIORADMINROLE = int(os.getenv('SENIOR_ADMIN_ROLE'))
+DADMINROLE = int(os.getenv('DADMIN_ROLE'))
+CAMROLE = int(os.getenv('CAM_ROLE'))
+MVPROLE = int(os.getenv('MVP_ROLE'))
+CREATORROLE = int(os.getenv('CREATOR_ROLE'))
 
 class Player:
     
@@ -24,25 +29,32 @@ class Player:
 
     def updatePermission(self, role):
         permission = self._convertRoleToPermission(role)
-        self.permission = permission
-        db.updatePermission(self.TPFID, permission)
-        wd.createWhitelistDoc() #TODO, change to a update whitelist doc function.
-        return
+        check = ["none, whitelist"]
+        if permission in check: return
+        else:
+            self.permission = permission
+            db.updatePermission(self.TPFID, permission)
+            wd.createWhitelistDoc() #TODO, change to a update whitelist doc function.
+            return
 
     def deletePlayer(self):
         db.deletePlayer(TPFID=self.TPFID)
         return
 
     def _convertRoleToPermission(role):
-        tier = ""
-        if role == WHITELISTROLE: tier = "solo"
-        #TODO, update to include all patreon roles after the rework
-        return tier
+        if role == DADMINROLE: return "dadmin"
+        elif role == SENIORADMINROLE: return "senior"
+        elif role == ADMINROLE: return "admin" 
+        elif role == JUNIORADMINROLE: return "junior"
+        elif role == CAMROLE: return "cam"
+        elif role == CREATORROLE: return "creator"
+        elif role == MVPROLE: return "MVP"
+        return
 
     def _generateTPFID():
         TPFID = 0
         while db.checkTPFIDPressence(TPFID) or TPFID == 0:
-            TPFID = random.randint(111111111111111, 999999999999999)
+            TPFID = random.randint(111111111111111, 999999999999999) #15 long ID
         return TPFID
     
     def _checkDuplicateUser(steam64ID, discordID, TPFID):
@@ -55,7 +67,7 @@ class Player:
         else:
             return
 
-class newPlayer(Player):
+class NewPlayer(Player):
     def __init__(self, discordID, steam64ID, role, name):
         permission = self._convertRoleToPermission(role)
         hlp.checkSteam64ID(steam64ID) #will raise InvalidSteam64ID exception
@@ -66,13 +78,25 @@ class newPlayer(Player):
         self.TPFID = self._generateTPFID()
         return
 
-class DatabasePlayer(Player):
+class ListPlayer(Player):
+    def __init__(self, playerList):
+        self.steam64ID = playerList["Steam64ID"]
+        self.discordID = playerList["DiscordID"]
+        self.permission = playerList["Permission"]
+        self.name = playerList["Name"]
+        self.TPFID = playerList["TPFID"]
+        self.whitelist = playerList["Whitelist"]
+        return
+
+class DatabasePlayer(ListPlayer):
     def __init__(self, discordID):
         player = db.getPlayer(discordID = discordID) #will raise PlayerNotFound exception
-        self.steam64ID = player["Steam64ID"]
-        self.discordID = player["DiscordID"]
-        self.permission = player["Permission"]
-        self.name = player["Name"]
-        self.TPFID = player["TPFID"]
-        self.whitelist = player["Whitelist"]
+        super.__init__(player)
+
+        return 
+
+class SteamPlayer(ListPlayer):
+    def __init__(self, steam64ID):
+        player = db.getPlayer(steam64ID = steam64ID) #will raise PlayerNotFound exception
+        super.__init__(player)
         return 

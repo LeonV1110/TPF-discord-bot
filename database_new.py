@@ -110,6 +110,23 @@ def getAllWhitelisters():
         connection.commit()
     return result
 
+def getWhitelistOrder(TPFID):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `whitelistorder` WHERE `TPFID` = %s"
+            cursor.execute(sql, TPFID)
+            result = cursor.fetchall()
+        connection.commit()
+    return result
+
+def getAllPlayersOnOrder(OrderID):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `whitelistorder` WHERE `Whitelist` = %s"
+            cursor.execute(sql, OrderID)
+            result = cursor.fetchall()
+        connection.commit()
+    return result
 #############################
 ######### checkers ##########
 #############################
@@ -136,6 +153,24 @@ def checkTPFIDPressence(TPFID):
     with connectDatabase() as connection:
         with connection.cursor() as cursor:
             sql = "SELECT * FROM `player` WHERE `TPFID` = %s"
+            cursor.execute(sql, TPFID)
+        connection.commit()
+        result = cursor.fetchone()
+    return bool(result)
+
+def checkOrderIDPressence(orderID):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `whitelistorder` WHERE `OrderID` = %s"
+            cursor.execute(sql, orderID)
+        connection.commit()
+        result = cursor.fetchone()
+    return bool(result)
+
+def checkTPFIDPressenceInOrder(TPFID):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `whitelistorder` WHERE `TPFID` = %s"
             cursor.execute(sql, TPFID)
         connection.commit()
         result = cursor.fetchone()
@@ -185,6 +220,14 @@ def updatePermission(TPFID, permission):
         connection.commit()
     return
 
+def updateTier(orderID, tier):
+    with connectDatabase() as connection:
+        with connection.cursor as cursor:
+            sql = "UPDATE `whitelistorder` SET `OrderID` = %s WHERE `Tier` = %s"
+            cursor.execute(sql, (orderID, tier))
+        connection.commit()
+    return
+
 ##############################
 ######### deleters ###########
 ##############################
@@ -204,6 +247,7 @@ def deletePlayerByDiscordID(discordID):
             sql = "DELETE FROM `player` WHERE `DiscordID` = %s"
             cursor.execute(sql, discordID)
         connection.commit()
+    return
 
 def deletePlayerBySteam64ID(steam64ID):
     with connectDatabase() as connection:
@@ -211,6 +255,7 @@ def deletePlayerBySteam64ID(steam64ID):
             sql = "DELETE FROM `player` WHERE `Steam64ID` = %s"
             cursor.execute(sql, steam64ID)
         connection.commit()
+    return
 
 def deleteplayerByTPFID(TPFID):
     with connectDatabase() as connection:
@@ -218,3 +263,12 @@ def deleteplayerByTPFID(TPFID):
             sql = "DELETE FROM `player` WHERE `TPFID` = %s"
             cursor.execute(sql, TPFID)
         connection.commit()
+    return
+
+def deleteWhitelistOrder(orderID):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "DELETE FROM `whitelistorder` WHERE `OrderID` = %s"
+            cursor.execute(sql, orderID)
+        connection.commit()
+    return
