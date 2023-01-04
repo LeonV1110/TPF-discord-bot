@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import pymysql
-import errors as err
+import errors_new as err
 
 load_dotenv()
 DATABASEUSER = os.getenv('DATABASE_USERNAME')
@@ -40,11 +40,13 @@ def setupPlayerTable():
 
 def setupOrderTable():
     with connectDatabase() as connection:
-        with connection.cursor as cursor:
+        with connection.cursor() as cursor:
             sql = """CREATE TABLE `whitelistorder` (
                 `OrderID` bigint NOT NULL,
                 `TPFID` bigint NOT NULL,
                 `Tier` varchar(45) NOT NULL DEFAULT 'Solo',
+                `Active` TINYINT NOT NULL,
+                `Whitelistees` INT NOT NULL DEFAULT 1,
                 PRIMARY KEY (`OrderID`))"""
             cursor.execute(sql)
         connection.commit()  
@@ -127,6 +129,7 @@ def getAllPlayersOnOrder(OrderID):
             result = cursor.fetchall()
         connection.commit()
     return result
+
 #############################
 ######### checkers ##########
 #############################
@@ -183,18 +186,18 @@ def checkTPFIDPressenceInOrder(TPFID):
 #inputs a new player into the database
 def inputNewPlayer(TPFID, discordID, steam64ID, permission, name, patreonID = None): #patreonID is not currently used
     with connectDatabase() as connection:
-        with connection.cursor as cursor:
+        with connection.cursor() as cursor:
             sql = "INSERT INTO `player` (`TPFID`, `Steam64ID`, `DiscordID`, `Name`, `Permission`) VALUES (%s, %s, %s, %s, %s)"
             cursor.execute(sql, (TPFID, steam64ID, discordID, name, permission))
         connection.commit()
     return
 
 #inputs a new whitelist order to the database
-def inputWhiteListOrder(orderID, TPFID, tier):
+def inputWhiteListOrder(orderID, TPFID, tier, active, whitelistees):
     with connectDatabase() as connection:
-        with connection.cursor as cursor:
-            sql = "INSERT INTO `whitelistorder` (`OrderID`, `TPFID`, `Tier`) VALUES (%s, %s, %s)"
-            cursor.execute(sql, (orderID, TPFID, tier))
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO `whitelistorder` (`OrderID`, `TPFID`, `Tier`, `Active`, `Whitelistees`) VALUES (%s, %s, %s, %s)"
+            cursor.execute(sql, (orderID, TPFID, tier, active, whitelistees))
         connection.commit()
     return
 
@@ -205,7 +208,7 @@ def inputWhiteListOrder(orderID, TPFID, tier):
 #adds the whitelist to the user
 def updateWhiteList(TPFID, orderID):
     with connectDatabase() as connection:
-        with connection.cursor as cursor:
+        with connection.cursor() as cursor:
             sql = "UPDATE `player` SET `Whitelist` = %s WHERE `TPFID` = %s"
             cursor.execute(sql, (orderID, TPFID))
         connection.commit()
@@ -214,7 +217,7 @@ def updateWhiteList(TPFID, orderID):
 #updates the perssion of the user
 def updatePermission(TPFID, permission):
     with connectDatabase() as connection:
-        with connection.cursor as cursor:
+        with connection.cursor() as cursor:
             sql = "UPDATE `player` SET `Permission` = %s WHERE `TPFID` = %s"
             cursor.execute(sql, (permission, TPFID))
         connection.commit()
@@ -222,9 +225,25 @@ def updatePermission(TPFID, permission):
 
 def updateTier(orderID, tier):
     with connectDatabase() as connection:
-        with connection.cursor as cursor:
-            sql = "UPDATE `whitelistorder` SET `OrderID` = %s WHERE `Tier` = %s"
-            cursor.execute(sql, (orderID, tier))
+        with connection.cursor() as cursor:
+            sql = "UPDATE `whitelistorder` SET `Tier` = %s WHERE `OrderID` = %s"
+            cursor.execute(sql, (tier, orderID))
+        connection.commit()
+    return
+
+def updateWhitelistees(orderID, whitelistees):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "UPDATE `whitelistorder` SET `Whitelistees` = %s WHERE `OrderID` = %s"
+            cursor.execute(sql, (whitelistees, orderID))
+        connection.commit()
+    return
+
+def updateActivity(orderID, activity):
+    with connectDatabase() as connection:
+        with connection.cursor() as cursor:
+            sql = "UPDATE `whitelistorder` SET `Activity` = %s WHERE `OrderID` = %s"
+            cursor.execute(sql, (activity, orderID))
         connection.commit()
     return
 

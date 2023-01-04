@@ -22,3 +22,8 @@ class DuplicateOrderPresent(Exception):
     def __init__(self, message = "There is already an order from you in the system"):
         self.message = message
         super().__init__(self.message)
+
+class OrderNotFound(Exception):
+    def __init__(self, message = "There is no order from you in the system"):
+        self.message = message
+        super().__init__(self.message)

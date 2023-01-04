@@ -5,7 +5,7 @@ from disnake.ext import commands
 import pandas as pd
 import helper_new as hlp
 import player_new as pl
-import errors as err
+import errors_new as err
 import whitelistSpreadsheet as ws
 import database_new as db
 import whitelistDoc as wd
@@ -31,30 +31,25 @@ bot = commands.Bot(intents = intents, command_prefix='/')
 async def on_ready():
     print(f"We're logged in as {bot.user}")
 
-#update whitelistorder tier when roles change #TODO: deal with new tier being to low to support all whitelisted players.
+#update whitelistorder tier when roles change 
 @bot.event
 async def on_member_update(before, after):
     member = after
-    discordID = member.id
-    try:
-        player = pl.DatabasePlayer(discordID)
-    except err.PlayerNotFound as error:
-        return error.message
-    
-    TPFID = player.TPFID
-    order = wo.DatabaseOrder(TPFID)
-    order.updateOrder(member.roles)
-    return
-
+    hlp.updateWhitelist(member)
 
 #remove whitelist when they leave the server
 @bot.event
 async def on_member_remove(member):
     try:
         player = pl.DatabasePlayer(member.id)
-        player.updateRole("whitelist")
+        TPFID = player.TPFID
+        try:
+            order = wo.DatabaseOrder(TPFID)
+            order.updateOrderTier(member.roles) #TODO, make sure it works
+        except err.OrderNotFound() as error:
+            return error.message
     except err.PlayerNotFound:
-        return
+        return error.message
 
 #########################################
 ########   Player Commands    ###########
@@ -67,21 +62,16 @@ async def on_member_remove(member):
 async def register(inter, steam64id: str):
     await inter.response.defer(ephemeral = True)
     discordID = inter.author.id
-    role = "nothing"
-    discordRoles = inter.author.roles
+    role = inter.author.roles
     name = inter.author.name + "#" + inter.author.discriminator
-    for discordRole in discordRoles:
-        if discordRole.id == WHITELISTROLE:
 
-            role = "whitelist"
     embed = disnake.Embed(title = "Registration was successful")
     try:
-        player = pl.DiscordPlayer(discordID, steam64id, role, name)
+        player = pl.NewPlayer(discordID, steam64id, role, name)
     except (err.InvalidSteam64ID, err.InvalidRole ) as error:
         embed = disnake.Embed(title= error.message)
         await inter.followup.send(embed = embed, ephemeral = True)
         return
-
     try:
         player.playerToDB()
     except err.DuplicatePlayerPresent as error2:
@@ -90,12 +80,11 @@ async def register(inter, steam64id: str):
     await inter.followup.send(embed = embed, ephemeral = True)
 
 #updates the role of the user using it
-#TODO, rewrite to use propper error handling
 @bot.slash_command(description="manually intiates a whitelist update")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def update_my_whitelist(inter):
     member = inter.author
-    response = hlp.updateRoles(member)
+    response = hlp.updateWhitelist(member)
     embed = disnake.Embed(title= response)
     await inter.response.send_message(embed = embed, ephemeral = True)
     return
@@ -115,22 +104,11 @@ async def remove_myself_from_database(inter):
     
     embed = disnake.Embed(title="You have been successfully deleted from the database")
     await inter.response.send_message(embed = embed, ephemeral = True)
+    return
 
 #########################################
 ########   Admin Commands    ############
 #########################################
-
-#TODO
-@bot.slash_command(description="")
-@commands.default_member_permissions(kick_members=True, manage_roles=True)
-async def layer_vote(inter, layerone: str, layertwo: str, channel):
-    print(layerone)
-    print(layertwo)
-    print(channel)
-
-    embed = disnake.Embed(title = "test")
-    await inter.response.send_message(embed = embed)
-    return
 
 #removes a specified players entry from the database
 @bot.slash_command(description="Deletes your entry from our database, this will also remove your whitelist.")
@@ -152,7 +130,7 @@ async def nuke_player(inter, discordid : str, steam64id : str):
     await inter.response.send_message(embed = embed)
 
 
-
+#TODO
 @bot.slash_command(description="Updates all roles for everyone")
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def update_all_whitelists(inter):
@@ -181,7 +159,6 @@ async def update_all_whitelists(inter):
 @bot.slash_command(description="Checks in the spreadsheet if anyone has whitelist while not having an appropiate role")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def check_freeloaders(inter):
-
     await inter.response.defer()
 
     freeloaders = []
@@ -214,33 +191,30 @@ async def check_freeloaders(inter):
     await inter.followup.send(embed = embeded, ephemeral = True)
     return
 
-#TODO doesn't work with MVP's
 @bot.slash_command(description="Checks in the spreadsheet if anyone has whitelist while not having an appropiate role")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def import_spreadsheet(inter):
     await inter.response.defer() 
     df = ws.opensheet()
+
     length = len(df)
     nameSeries = df['discord username'].squeeze()
     steam64IDSeries = df['steamid'].squeeze()
     discordIDSeries = df['DiscordID'].squeeze()
-    group = df['group']
+    groupSeries = df['group']
 
-    AllowedRoles = ['whitelist', 'mvp', 'creator', 'caster' ]
+    AllowedGroups = ['whitelist', 'mvp', 'creator', 'caster' ]
     count = 0
 
     for i in range(length):
-        role = group.at[i]
-        if (role in AllowedRoles):
+        group = groupSeries.at[i]
+        if (group in AllowedGroups):
             name = nameSeries.at[i]
             discordID = discordIDSeries.at[i]
             steam64ID = steam64IDSeries.at[i]
             if (isinstance(discordID, int)):
                 try:
-                    print (name)
-                    print (role)
-                    player = pl.DiscordPlayer(discordID, steam64ID, role, name)
-                    
+                    player = pl.SpreadsheetPlayer(discordID, steam64ID, group, name)
                     player.playerToDB()
                 except err.DuplicatePlayerPresent:
                     pass
@@ -254,8 +228,8 @@ async def import_spreadsheet(inter):
         
     print(str(count) + " missing discordID's")
     await inter.followup.send("Spreadsheet has been imported")
-
     return
+
 #########################################
 #######   testing Commands    ###########
 #########################################
