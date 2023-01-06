@@ -11,6 +11,12 @@ WHITELISTROLE = int(os.getenv('WHITELIST_ROLE'))
 # TODO, update to include all patreon roles after the rework
 
 class WhitelistOrder:
+    orderID : int
+    TPFID: int
+    tier: str
+    acitive: int
+    whitelistees: int
+    whitelisted: int
 
     def orderToDB(self):
         self._checkDuplicateOrder(self.TPFID)
@@ -21,8 +27,8 @@ class WhitelistOrder:
         db.updateTier(orderID, tier)
         return
 
-    def updateOrderTier(self, role):
-        tier = self._convertRoleToTier(role)
+    def updateOrderTier(self, roles):
+        tier = WhitelistOrder._convertRoleToTier(roles)
         self.tier = tier
         db.updateTier(self.orderID, tier)
         if not self._checkWhitelistees(): self.deactivateOrder()
@@ -71,11 +77,13 @@ class WhitelistOrder:
         while orderID == 0 or db.checkOrderIDPressence(orderID):
             orderID = random.randint(1111111111111111, 9999999999999999) #16 long ID
         return orderID
-
-    def _convertRoleToTier(self, role):
-        if role == WHITELISTROLE: return 'solo'
-        #elif role == #TODO tiers above solo whitelist, (after patreon rework)
-        return
+    
+    @staticmethod
+    def _convertRoleToTier(roles):
+        for role in roles:
+            if WHITELISTROLE == role.id: return 'solo'
+            #elif role == #TODO tiers above solo whitelist, (after patreon rework)
+        raise err.InvalidRole()
 
     def _checkDuplicateOrder(self, TPFID):
         if db.checkTPFIDPressenceInOrder(TPFID):
@@ -91,12 +99,12 @@ class NewOrder(WhitelistOrder):
     def __init__(self, discordID, role):
         player = pl.DatabasePlayer(discordID)
         self.TPFID = player.TPFID
-        self.tier = self._convertRoleToTier(role)
+        self.tier = WhitelistOrder._convertRoleToTier(role)
         orderID = self._generateOrderID()
         self.orderID = orderID
-        self.activity = True
-        self.whitelistees = 1
-        self.whitelisted = 1 + len(self.getAllPlayersOnOrder(orderID))
+        self.active = True
+        self.whitelistees = 1 #TODO: should be adjusted based on the tier
+        self.whitelisted = 1 + len(self.getAllPlayersOnOrder())
 
 class DatabaseOrder(WhitelistOrder):
     def __init__(self, TPFID):
@@ -106,6 +114,6 @@ class DatabaseOrder(WhitelistOrder):
         self.tier = order["Tier"]
         orderID = order["OrderID"]
         self.orderID = orderID
-        self.activity = order['Activity']
+        self.active = order['Active']
         self.whitelistees = order['Whitelistees']
-        self.whitelisted = 1 + len(self.getAllPlayersOnOrder(orderID))
+        self.whitelisted = 1 + len(self.getAllPlayersOnOrder())

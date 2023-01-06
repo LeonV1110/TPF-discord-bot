@@ -16,6 +16,7 @@ DADMINROLE = int(os.getenv('DADMIN_ROLE'))
 #CAMROLE = int(os.getenv('CAM_ROLE'))
 #MVPROLE = int(os.getenv('MVP_ROLE'))
 CREATORROLE = int(os.getenv('CREATOR_ROLE'))
+WHITELISTROLE = int(os.getenv('WHITELIST_ROLE'))
 
 class Player:
     
@@ -28,8 +29,8 @@ class Player:
         db.updateWhiteList(self.TPFID, orderID) 
         return
 
-    def updatePermission(self, role):
-        permission = self._convertRoleToPermission(role)
+    def updatePermission(self, roles):
+        permission = self._convertRoleToPermission(roles)
         check = ["none, whitelist"]
         if permission in check: return
         else:
@@ -52,6 +53,7 @@ class Player:
             #elif role.id == CAMROLE: return 'cam'
             elif role.id == CREATORROLE: return 'creator'
             #elif role.id == MVPROLE: return 'MVP'
+            elif role.id == WHITELISTROLE: return 'whitelist'
         return 'none'
     
     def _convertGroupToPermission(self, group):

@@ -206,6 +206,9 @@ async def import_spreadsheet(inter):
     AllowedGroups = ['whitelist', 'mvp', 'creator', 'caster' ]
     count = 0
 
+    guild = disnake.utils.get(bot.guilds, name = GUILD)
+    members = [member for member in guild.members]
+
     for i in range(length):
         group = groupSeries.at[i]
         if (group in AllowedGroups):
@@ -216,10 +219,22 @@ async def import_spreadsheet(inter):
                 try:
                     player = pl.SpreadsheetPlayer(discordID, steam64ID, group, name)
                     player.playerToDB()
+                    try:
+                        for member in members:
+                            if member.id == discordID:
+                                roles = member.roles
+                                wlOrder = wo.NewOrder(discordID, roles)
+                                wlOrder.orderToDB()
+
+                                player.updatePermission(roles)
+
+                    except err.InvalidRole as error:
+                        print(name + " Has no whitelist role")
+                        pass
                 except err.DuplicatePlayerPresent:
                     pass
-                except (err.PlayerNotFound, err.InvalidSteam64ID, err.InvalidRole) as error: 
-                    print(discordID)
+                except (err.PlayerNotFound, err.InvalidSteam64ID) as error: 
+                    print(discordID + ' ' +  name)
                     print(error.message)
             else:
                 count += 1

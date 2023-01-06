@@ -124,7 +124,7 @@ def getWhitelistOrder(TPFID):
 def getAllPlayersOnOrder(OrderID):
     with connectDatabase() as connection:
         with connection.cursor() as cursor:
-            sql = "SELECT * FROM `whitelistorder` WHERE `Whitelist` = %s"
+            sql = "SELECT * FROM `whitelistorder` WHERE `Whitelistees` = %s"
             cursor.execute(sql, OrderID)
             result = cursor.fetchall()
         connection.commit()
@@ -196,8 +196,8 @@ def inputNewPlayer(TPFID, discordID, steam64ID, permission, name, patreonID = No
 def inputWhiteListOrder(orderID, TPFID, tier, active, whitelistees):
     with connectDatabase() as connection:
         with connection.cursor() as cursor:
-            sql = "INSERT INTO `whitelistorder` (`OrderID`, `TPFID`, `Tier`, `Active`, `Whitelistees`) VALUES (%s, %s, %s, %s)"
-            cursor.execute(sql, (orderID, TPFID, tier, active, whitelistees))
+            sql = "INSERT INTO `whitelistorder` (`OrderID`, `TPFID`, `Tier`, `Active`, `Whitelistees`) VALUES (%s, %s, %s, %s, %s)"
+            cursor.execute(sql, (str(orderID), str(TPFID), str(tier), int(active), str(whitelistees)))
         connection.commit()
     return
 
