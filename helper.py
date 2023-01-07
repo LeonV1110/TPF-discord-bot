@@ -3,6 +3,8 @@ import errors as err
 import player as pl
 import os
 from dotenv import load_dotenv
+import random
+import WhitelistOrder as wo
 
 load_dotenv()
 WHITELISTROLE = int(os.getenv('WHITELIST_ROLE'))
@@ -25,26 +27,7 @@ def checkSteam64ID(steamID):
        raise err.InvalidSteam64ID("This is not a valid steam64ID, as it is shorter than 17 characters.")
     if (len(str(steamID)) > 17):
         raise err.InvalidSteam64ID("This is not a valid steam64ID, as it is longer than 17 characters.")
-    return
-
-def checkRole(role):
-    valid = ["whitelist", "nothing"]
-    if role in valid:
-        return
-    else:
-        raise err.InvalidRole()
-
-def checkDuplicateUser(steam64ID, discordID):
-    if db.checkDiscordIDPressence(discordID):
-        raise err.DuplicatePlayerPresent("This discordID is already in use")
-    elif db.checkSteamIDPressence(steam64ID):
-        raise err.DuplicatePlayerPresent("This steam64ID is already in use")
-    else:
-        return
-
-def updateRoles(member):
-    whitelist = updateWhitelist(member)
-    return whitelist
+    return 
 
 
 def updateWhitelist(member):
@@ -53,14 +36,10 @@ def updateWhitelist(member):
         player = pl.DatabasePlayer(discordID)
     except err.PlayerNotFound as error:
         return error.message
-    
-    discordRoles = member.roles
-    res = "I wasn't able to find a whitelist role on your user, are you sure that you have connected your patreon to discord?"
-    role = "nothing"
-    for discordRole in discordRoles:
-        if discordRole.id == WHITELISTROLE:
-            role = "whitelist"
-            res = "You have received whitelist, thanks for suporting us!"
-    player.updateRole(role)
-
-    return res
+    TPFID = player.TPFID
+    try:
+        order = wo.DatabaseOrder(TPFID)
+        order.updateOrderTier(member.roles) # will deactivate the order if the tier is too low
+    except err.OrderNotFound as error:
+        return error.message
+    return "You have received whitelist, thanks for suporting us!"

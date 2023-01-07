@@ -1,8 +1,8 @@
-import database_new as db
-import player_new as pl
+import database as db
+import player as pl
 import random
 import os
-import errors_new as err
+import errors as err
 from dotenv import load_dotenv
 
 
