@@ -42,7 +42,11 @@ class Player():
         self.update_discordID(discordID)
         self.update_name(name)
         if permission is not None: self.update_permission(permission)
-        if tier is not None: self.update_whitelist_order(tier)
+        if tier is not None: 
+            if self.whitelist_order is not None:
+                self.update_whitelist_order(tier)
+            else:
+                self.add_whitelist_order(tier)
 
     def update_steam64ID(self, steam64ID: str):
         self.steam64ID = steam64ID
@@ -81,6 +85,13 @@ class Player():
     def update_whitelist_order(self, tier):
         self.whitelist_order.update_order_tier(tier)
         return
+
+    def check_whitelist(self):
+        sql = "SELECT * FROM `whitelist` WHERE `TPFID` = %s"
+        vars = (self.TPFID)
+        res = excecute_query(sql, vars, 1)
+        return bool(res)
+    
 
 ###########################
 ####### SUBCLASSES ########

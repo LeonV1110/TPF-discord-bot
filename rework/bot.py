@@ -27,7 +27,17 @@ async def on_ready():
 
 @bot.event
 async def on_member_update(before, after):
-    pass #TODO
+    discordID = after.id
+    try:
+        player = DatabasePlayer(discordID)
+        roles = after.roles
+        tier = hlp.convert_role_to_tier(roles)
+        print(tier)
+        permission = hlp.convert_role_to_perm(roles)
+        name = after.name + "#" + after.discriminator
+        player.update(player.steam64ID, discordID, name, permission, tier)
+    except PlayerNotFound:
+        pass
 
 @bot.event
 async def on_member_remove(member):
@@ -37,7 +47,8 @@ async def on_member_remove(member):
 ########   Player Commands    ###########
 #########################################
 
-@bot.slash_command(discription = "Link your steam64ID with your discord account in our database") #Also actives whitelist and perms if role is present
+@bot.slash_command(discription = "Link your steam64ID with your discord account in our database") 
+#Also actives whitelist and perms if role is present
 async def register(inter, steam64id: str):
     await inter.response.defer(ephemeral=True)
     try:
@@ -106,7 +117,7 @@ async def update_data(inter, steam64id: str):
     await inter.followup.send(embed= embed, ephemeral=True)
     return
 
-@bot.slash_command(discription = "TODO")
+@bot.slash_command(discription = "See what information we have about you in the database")
 async def get_info(inter):
     await inter.response.defer(ephemeral=True)
 
@@ -121,6 +132,13 @@ async def get_info(inter):
     embed.add_field(name = 'steam64 ID', value= player.steam64ID)
     embed.add_field(name = 'discord ID', value= player.discordID)
     embed.add_field(name = 'TPF ID', value= player.TPFID)
+    if player.check_whitelist():
+        whitelist_status = 'Active'
+    else:
+        whitelist_status = 'Inactive'
+    embed.add_field(name = 'Whitelist Status', value = whitelist_status)
+    if player.whitelist_order is not None:
+        embed.add_field(name = 'Whitelist Order', value= player.whitelist_order.tier)
 
     await inter.followup.send(embed=embed, ephemeral=True)
     return
@@ -178,5 +196,16 @@ async def import_spreadsheet(inter):
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def setup_database(inter):
     pass #TODO
+
+@bot.slash_command(discription = "dont worry")
+@commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
+async def get_role_ids(inter):
+    await inter.response.defer()
+    roles = inter.author.roles
+    for role in roles:
+        print(role)
+        print(role.id)
+    await inter.followup.send(embed = Embed(title= "Boo"))
+    return
 
 bot.run(TOKEN)

@@ -39,6 +39,7 @@ class WhitelistOrder():
         sql = "UPDATE `whitelist_order` SET `tier`= %s WHERE `TPFID` = %s"
         vars = (tier, self.TPFID)
         excecute_query(sql, vars)
+        #TODO make sure the ammount of whitelists on the order doesn't go to low
         return
 
     def add_whitelist(self, TPFID: str):
