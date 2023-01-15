@@ -3,7 +3,7 @@ import random
 from database import excecute_query
 from permission import Permission
 from whitelistOrder import (DatabaseWhitelistOrder, NewWhitelistOrder,
-                            WhitelistOrder)
+                            WhitelistOrder, OrderIDWhitelistOrder)
 from error import PlayerNotFound, DuplicatePlayerPresent
 
 class Player():
@@ -20,7 +20,7 @@ class Player():
         self.check_duplicate_player()
         sql = "INSERT INTO `player` (`TPFID`, `steam64ID`, `discordID`, `name`, `patreonID`) VALUES (%s, %s, %s, %s, %s)"
         vars = (self.TPFID, self.steam64ID, self.discordID, self.name, self.patreonID)
-        excecute_query(sql, vars, 3)
+        excecute_query(sql, vars, 3) 
         return
 
     def check_duplicate_player(self):
@@ -31,22 +31,28 @@ class Player():
         else: return
 
 
-    def delete_player(self): #TODO make it delete any whitelist and whitelistOrder entries too.
+    def delete_player(self):
+        self.whitelist_order.delete_order()
+        #Delete any whitelists
+        sql = "DELETE FROM `whitelist` WHERE 'TPFID` = %s"
+        vars = (self.TPFID)
+        excecute_query(sql, vars)
+
+        #Delete the actual player
         sql = "DELETE FROM `player` WHERE `steam64ID` = %s"
         vars = (self.steam64ID)
-        excecute_query(sql, vars, 3)
+        excecute_query(sql, vars)
         return
 
     def update(self, steam64ID:str, discordID:str, name: str, permission: str = None, tier: str= None):
         self.update_steam64ID(steam64ID)
         self.update_discordID(discordID)
         self.update_name(name)
-        if permission is not None: self.update_permission(permission)
-        if tier is not None: 
-            if self.whitelist_order is not None:
-                self.update_whitelist_order(tier)
-            else:
-                self.add_whitelist_order(tier)
+        self.update_permission(permission)
+        if self.whitelist_order is not None:
+            self.update_whitelist_order(tier)
+        else:
+            self.add_whitelist_order(tier)
 
     def update_steam64ID(self, steam64ID: str):
         self.steam64ID = steam64ID
@@ -86,11 +92,16 @@ class Player():
         self.whitelist_order.update_order_tier(tier)
         return
 
-    def check_whitelist(self):
+    # Checks both for pressence of whitelist and if the order is active
+    def check_whitelist(self): 
         sql = "SELECT * FROM `whitelist` WHERE `TPFID` = %s"
         vars = (self.TPFID)
         res = excecute_query(sql, vars, 1)
-        return bool(res)
+        if res:
+            orderID = res['orderID']
+            WhitelistOrder = OrderIDWhitelistOrder(orderID)
+            return WhitelistOrder.active
+        else: return False
     
 
 ###########################
@@ -115,7 +126,7 @@ class NewPlayer(Player):
         TPFID = 1
         while TPFID == 1 or NewPlayer.__check_TPFID_pressence(TPFID):
             TPFID = random.randint(111111111111111, 999999999999999) #15 long ID
-        return TPFID
+        return str(TPFID)
 
     @staticmethod
     def __check_TPFID_pressence(TPFID):
@@ -161,6 +172,14 @@ class SteamPlayer(ListPlayer):
     def __init__(self, steam64ID):
         sql = "SELECT * FROM `player` WHERE `steam64ID` = %s"
         vars = (steam64ID)
+        player_list = excecute_query(sql, vars, 1)
+        super().__init__(player_list)
+        return
+
+class TPFIDPlayer(ListPlayer):
+    def __init__(self, TPFID: str):
+        sql = "SELECT * FROM `player` WHERE `TPFID` = %s"
+        vars = (TPFID)
         player_list = excecute_query(sql, vars, 1)
         super().__init__(player_list)
         return

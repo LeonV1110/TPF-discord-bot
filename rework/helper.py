@@ -1,4 +1,4 @@
-from error import InvalidSteam64ID
+from error import InvalidSteam64ID, InvalidDiscordID
 from dotenv import load_dotenv
 import os
 
@@ -39,7 +39,7 @@ def convert_role_to_tier(roles):
     return None
 
 def check_steam64ID(steam64ID: str):
-        #check if int
+    #check if int
     try:
         int(steam64ID)
     except:
@@ -51,8 +51,24 @@ def check_steam64ID(steam64ID: str):
     if (not steam64ID[0:7] == "7656119"):
        raise InvalidSteam64ID("This is not a valid steam64ID.")
     #check the length
-    if (len(str(steam64ID)) < 17):
+    if (len(steam64ID) < 17):
        raise InvalidSteam64ID("This is not a valid steam64ID, as it is shorter than 17 characters.")
-    if (len(str(steam64ID)) > 17):
+    if (len(steam64ID) > 17):
         raise InvalidSteam64ID("This is not a valid steam64ID, as it is longer than 17 characters.")
     return 
+
+def check_discordID(discordID: str):
+    try:
+        int(discordID)
+    except:
+        raise InvalidDiscordID('A discordID contains just numbers.')
+    if len(discordID) < 18: 
+        raise InvalidDiscordID("A discordID is 18 characters long, this one is too short.")
+    elif len(discordID) > 18:
+        raise InvalidDiscordID("A discordID is 18 characters long, this one is too long.")
+    return
+
+    
+def get_max_whitelists(tier):
+    tierDict = {'whitelist': 1, 'farmer': 2, 'council': 5, 'show_off': 10}
+    return tierDict[tier]

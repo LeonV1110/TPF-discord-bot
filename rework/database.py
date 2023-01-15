@@ -23,7 +23,7 @@ def excecute_query(sql: str, vars: tuple = None, format: int = 3):
     if format == 3: return
     elif bool(result):
         return result
-    else: return #TODO, figure out what to do when the database return nothing
+    else: return
 
 def setup_database():
     setup_player_table()
@@ -47,6 +47,7 @@ def setup_order_table():
         `orderID` varchar(16) NOT NULL,
         `TPFID` varchar(15) NOT NULL,
         `tier` varchar(45) NOT NULL,
+        `active` TINYINT NOT NULL,
         PRIMARY KEY (`OrderID`))"""
     excecute_query(sql)
 
