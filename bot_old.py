@@ -3,13 +3,13 @@ import disnake
 from dotenv import load_dotenv
 from disnake.ext import commands
 import pandas as pd
-import helper as hlp
-import player as pl
+import helper_old as hlp
+import player_old as pl
 import errors as err
 import whitelistSpreadsheet as ws
-import database as db
+import database_old as db
 import whitelistDoc as wd
-import WhitelistOrder as wo
+import WhitelistOrder_old as wo
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')

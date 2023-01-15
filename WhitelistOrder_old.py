@@ -1,5 +1,5 @@
-import database as db
-import player as pl
+import database_old as db
+import player_old as pl
 import random
 import os
 import errors as err

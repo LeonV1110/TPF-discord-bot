@@ -1,10 +1,10 @@
-import database as db
+import database_old as db
 import errors as err
-import player as pl
+import player_old as pl
 import os
 from dotenv import load_dotenv
 import random
-import WhitelistOrder as wo
+import WhitelistOrder_old as wo
 
 load_dotenv()
 WHITELISTROLE = int(os.getenv('WHITELIST_ROLE'))

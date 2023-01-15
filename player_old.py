@@ -1,5 +1,5 @@
-import database as db
-import helper as hlp
+import database_old as db
+import helper_old as hlp
 import os
 import random
 import whitelistDoc as wd
