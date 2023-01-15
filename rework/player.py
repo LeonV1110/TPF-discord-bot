@@ -32,7 +32,8 @@ class Player():
 
 
     def delete_player(self):
-        self.whitelist_order.delete_order()
+        if self.whitelist_order is not None:
+            self.whitelist_order.delete_order()
         #Delete any whitelists
         sql = "DELETE FROM `whitelist` WHERE 'TPFID` = %s"
         vars = (self.TPFID)
@@ -49,10 +50,17 @@ class Player():
         self.update_discordID(discordID)
         self.update_name(name)
         self.update_permission(permission)
-        if self.whitelist_order is not None:
-            self.update_whitelist_order(tier)
+        if tier is not None:
+            if self.whitelist_order is not None:
+                self.update_whitelist_order(tier)
+            else:
+                self.add_whitelist_order(tier)
         else:
-            self.add_whitelist_order(tier)
+            if self.whitelist_order is not None:
+                self.whitelist_order.delete_order()
+            else:
+                pass
+        return
 
     def update_steam64ID(self, steam64ID: str):
         self.steam64ID = steam64ID

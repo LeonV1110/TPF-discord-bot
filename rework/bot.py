@@ -183,9 +183,13 @@ async def add_player_to_whitelist(inter, steam64id: str):
     try: 
         owner = DatabasePlayer(discordID)
         player = SteamPlayer(steam64id)
-        owner.whitelist_order.add_whitelist(player.TPFID)
+        if owner.whitelist_order is None:
+            await inter.followup.send(embed = Embed(title = "It seems like you don't have a whitelist subscription. Make sure you are subscribed on Patreon and reconnect your discord account to Patreon"), ephemeral = True)
+            return
+        else:
+            owner.whitelist_order.add_whitelist(player.TPFID)
     except (InsuffientTier, PlayerNotFound) as error:
-        await inter.followup.send(embed = Embed(title = error.message, ephemeral = True))
+        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
         return
     except OperationalError:
         await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
@@ -209,7 +213,7 @@ async def remove_player_from_whitelist(inter, steam64id: str):
         player = SteamPlayer(steam64id)
         owner.whitelist_order.remove_whitelist(player.TPFID)
     except (InsuffientTier, PlayerNotFound, WhitelistNotFound) as error:
-        await inter.followup.send(embed = Embed(title = error.message, ephemeral = True))
+        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
         return
     except OperationalError:
         await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
@@ -235,7 +239,7 @@ async def update_player_on_whitelist(inter, old_steam64id: str, new_steam64id: s
         owner.whitelist_order.remove_whitelist(old_player.TPFID)
         owner.whitelist_order.add_whitelist(new_player.TPFID)
     except (InsuffientTier, PlayerNotFound, WhitelistNotFound) as error:
-        await inter.followup.send(embed = Embed(title = error.message, ephemeral = True))
+        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
         return
     except OperationalError:
         await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
@@ -263,7 +267,7 @@ async def get_whitelist_subscription_info(inter):
                     whitelistees.append(player.name)
 
                 except (InsuffientTier, PlayerNotFound, WhitelistNotFound) as error:
-                    await inter.followup.send(embed = Embed(title = error.message, ephemeral = True))
+                    await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
                     return
                 except OperationalError:
                     await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
@@ -301,7 +305,7 @@ async def admin_nuke_player(inter, discordid: str, steam64id: str):
         hlp.check_discordID(discordid)
         hlp.check_steam64ID(steam64id)
     except (InvalidSteam64ID, InvalidDiscordID) as error:
-        await inter.followup.send(embed = Embed(title = error.message, ephemeral = True))
+        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
         return
     
     try:
@@ -312,7 +316,7 @@ async def admin_nuke_player(inter, discordid: str, steam64id: str):
             await inter.followup.send(embed = Embed(title = 'The steam64ID does not match with the discordID, thus the player was not deleted. ', ephemeral = True))
             return
     except (PlayerNotFound) as error:
-        await inter.followup.send(embed = Embed(title = error.message, ephemeral = True))
+        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
         return
     except OperationalError:
         await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
