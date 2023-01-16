@@ -164,7 +164,7 @@ class ListPlayer(Player):
         self.permission = Permission(self.TPFID, ListPlayer.get_permision(self.TPFID)) 
         try:
             self.whitelist_order = DatabaseWhitelistOrder(self.TPFID)
-        except: #TODO, except specific error
+        except:
             pass
         #Patreon ID not implemented as it's unused
         return
