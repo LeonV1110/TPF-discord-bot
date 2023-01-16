@@ -1,39 +1,43 @@
-class PlayerNotFound(Exception):
-    def __init__(self, message = "Player was not found"):
+class MyException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+class PlayerNotFound(MyException):
+    def __init__(self, message = "Player is not registed or was not found."):
         self.message = message
         super().__init__(self.message)
 
-class DuplicatePlayerPresent(Exception):
+class DuplicatePlayerPresent(MyException):
     def __init__(self, message="There is already a player with this steam64 or discord ID."):
         self.message = message
         super().__init__(self.message)
 
-class InvalidSteam64ID(Exception):
+class InvalidSteam64ID(MyException):
     def __init__(self, message = "This is not a valid steam64ID."):
         self.message = message
         super().__init__(self.message)
 
-class InvalidDiscordID(Exception):
+class InvalidDiscordID(MyException):
     def __init__(self, message = "This is not a valid discordID."):
         self.message = message
         super().__init__(self.message)
 
-class InsufficientTier(Exception):
+class InsufficientTier(MyException):
     def __init__(self, message = "Your whitelist tier is insufficient for the current amount of whitelists."):
         self.message = message
         super().__init__(self.message)
 
-class WhitelistNotFound(Exception):
+class WhitelistNotFound(MyException):
     def __init__(self, message = "This player does not have a whitelist on your subscription."):
         self.message = message
         super().__init__(self.message)
 
-class SelfDestruct(Exception):
+class SelfDestruct(MyException):
     def __init__(self, message = "This is your own steam64ID, you cannot remove yourself from your own subscription."):
         self.message = message
         super().__init__(self.message)
 
-class FFS(Exception):
+class FFS(MyException):
     def __init__(self, message = "????????"):
         self.message = message
         super().__init__(self.message)

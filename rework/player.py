@@ -15,12 +15,15 @@ class Player():
     permission: Permission = None
     whitelist_order: WhitelistOrder = None
     
+    def __eq__(self, __o: object) -> bool:
+        return self.__dict__ == __o.__dict__
 
     def player_to_DB(self):
         self.check_duplicate_player()
         sql = "INSERT INTO `player` (`TPFID`, `steam64ID`, `discordID`, `name`, `patreonID`) VALUES (%s, %s, %s, %s, %s)"
         vars = (self.TPFID, self.steam64ID, self.discordID, self.name, self.patreonID)
         excecute_query(sql, vars, 3) 
+        self.whitelist_order.order_to_DB()
         return
 
     def check_duplicate_player(self):
@@ -63,11 +66,7 @@ class Player():
         return
 
     def update_steam64ID(self, steam64ID: str):
-        sql = "SELECT * FROM `player` WHERE `steam64ID` = %s AND NOT `TPFID` = %s"
-        vars = (steam64ID, self.TPFID)
-        res = excecute_query(sql, vars, 1)
-        if bool(res):
-            raise DuplicatePlayerPresent()
+        self.check_for_duplicate_player(steam64ID)
         self.steam64ID = steam64ID
         
         sql = "UPDATE `player` SET `steam64ID` = %s WHERE `TPFID` = %s"
@@ -117,6 +116,13 @@ class Player():
             return WhitelistOrder.active
         else: return False
     
+    def check_for_duplicate_player(self, steam64ID):
+        sql = "SELECT * FROM `player` WHERE `steam64ID` = %s AND NOT `TPFID` = %s"
+        vars = (steam64ID, self.TPFID)
+        res = excecute_query(sql, vars, 1)
+        if bool(res):
+            raise DuplicatePlayerPresent()
+        return
 
 ###########################
 ####### SUBCLASSES ########

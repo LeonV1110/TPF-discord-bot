@@ -4,6 +4,9 @@ class Whitelist():
     TPFID: str
     orderID: str
 
+    def __eq__(self, __o: object) -> bool:
+        return self.__dict__ == __o.__dict__
+    
     def __init__(self, TPFID: str, orderID: str):
         self.TPFID = TPFID
         self.orderID = orderID

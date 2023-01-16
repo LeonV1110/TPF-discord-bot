@@ -4,6 +4,9 @@ class Permission():
     TPFID: str
     permission: str
 
+    def __eq__(self, __o: object) -> bool:
+        return self.__dict__ == __o.__dict__
+        
     def __init__(self, TPFID: str, permission: str):
         self.TPFID = TPFID
         self.permission = permission

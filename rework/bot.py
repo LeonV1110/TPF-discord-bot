@@ -1,11 +1,11 @@
-import disnake
-from disnake.ext import commands
-from disnake import Interaction, Embed
-from player import Player, NewPlayer, DatabasePlayer, SteamPlayer, TPFIDPlayer
-import helper as hlp
 import os
+
+import botHelper as bhlp
+import disnake
+from disnake import Embed, Interaction
+from disnake.ext import commands
 from dotenv import load_dotenv
-from error import PlayerNotFound, InvalidSteam64ID, InvalidDiscordID, DuplicatePlayerPresent, InsufficientTier, WhitelistNotFound, SelfDestruct
+from error import MyException
 from pymysql import OperationalError
 
 load_dotenv()
@@ -28,15 +28,9 @@ async def on_ready():
 
 @bot.event
 async def on_member_update(before, after):
-    discordID = after.id
     try:
-        player = DatabasePlayer(discordID)
-        roles = after.roles
-        tier = hlp.convert_role_to_tier(roles)
-        permission = hlp.convert_role_to_perm(roles)
-        name = after.name + "#" + after.discriminator
-        player.update(player.steam64ID, discordID, name, permission, tier)
-    except (PlayerNotFound, OperationalError, InsufficientTier):
+        bhlp.update_player_from_member(after)
+    except MyException:
         #TODO, log these errors
         pass
     
@@ -45,11 +39,9 @@ async def on_member_update(before, after):
 async def on_member_remove(member):
     discordID = member.id
     try:
-        player = DatabasePlayer(discordID)
-        tier = None
-        player.update_whitelist_order(tier)
+        bhlp.update_player_from_member(member) #TODO, test if the member object is stripped of its roles when the player leaves
         # currently does not remove the whitelist or player entry, meaning a player can safely leave the discord if they're not the order owner
-    except (PlayerNotFound, OperationalError):
+    except MyException:
         #TODO, log these errors
         pass
 
@@ -57,394 +49,201 @@ async def on_member_remove(member):
 ########   Player Commands    ###########
 #########################################
 
-@bot.slash_command(discription = "Link your steam64ID with your discord account in our database") 
+@bot.slash_command(description = "Link your steam64ID with your discord account in our database") 
 #Also actives whitelist and perms if role is present
 async def register(inter, steam64id: str):
-    #TODO, make it add the whitelist stuff
     await inter.response.defer(ephemeral=True)
+    embed = Embed(title= 'Registrations was successful.')
     try:
-        hlp.check_steam64ID(steam64id)
-    except InvalidSteam64ID as error:
-        await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
-        return
-
-    discordID = str(inter.author.id)
-    name = inter.author.name + "#" + inter.author.discriminator
-    roles = inter.author.roles
-    permission = hlp.convert_role_to_perm(roles)
-    tier = hlp.convert_role_to_tier(roles)
-
-    player = NewPlayer(steam64id, discordID, name, permission, tier)
-    try:
-        player.player_to_DB()
-    except DuplicatePlayerPresent as error:
-        await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
-        return
+        bhlp.register_player(member = inter.author, steam64ID = steam64id)
+    except MyException as error:
+        embed = Embed(title= error.message)
     except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later."), ephemeral=True)
-        return
-
-    embed = Embed(title= 'Registrations was successful')
+        embed = Embed(title= "The bot is currently having issues, please try again later.")
+    
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(discription = "Deletes your entry from our database, this will also remove your whitelist and the whitelists of anyone on your subscription.")
+    
+@bot.slash_command(description = "Deletes your entry from our database, also removes your whitelist of anyone on your subscription.")
 async def remove_myself_from_database(inter):
     await inter.response.defer(ephemeral=True)
+    embed = Embed(title='You have been successfully deleted from the database.')
 
-    discordID = str(inter.author.id)
     try:
-        player = DatabasePlayer(discordID)
-        player.delete_player()
-    except PlayerNotFound as error:
-        await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
-        return
+        bhlp.remove_player(member=inter.author)
+    except MyException as error:
+        embed = Embed(title= error.message)
     except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later."), ephemeral=True)
-        return
+        embed = Embed(title= "The bot is currently having issues, please try again later.")
 
-    embed = Embed(title='You have been successfully deleted from the database')
     await inter.followup.send(embed=embed, ephemeral=True)
     return
 
-@bot.slash_command(discription = "Reloads your data in the database")
-async def update_data(inter, steam64id: str):
+@bot.slash_command(description = "Reloads your data in the database.")
+async def update_data(inter):
     await inter.response.defer(ephemeral=True)
+    embed = Embed(title='Your data was successfully updated.')
 
     try:
-        hlp.check_steam64ID(steam64id)
-    except InvalidSteam64ID as error:
-        await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
-        return
-    
-    discordID = inter.author.id
-    name = inter.author.name + "#" + inter.author.discriminator
-    roles = inter.author.roles
-    permission = hlp.convert_role_to_perm(roles)
-    tier = hlp.convert_role_to_tier(roles)
-
-    try:
-        player = DatabasePlayer(discordID)
-        player.update(steam64id, discordID, name, permission, tier)
-    except (PlayerNotFound, DuplicatePlayerPresent, InsufficientTier) as error:
-        await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
-        return
+        bhlp.update_player_from_member(member=inter.author)
+    except MyException as error:
+        embed = Embed(title= error.message)
     except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
-        return
+        embed = Embed(title= "The bot is currently having issues, please try again later.")
 
-    embed = Embed(title='Your data was successfully updated')
     await inter.followup.send(embed= embed, ephemeral=True)
     return
 
-@bot.slash_command(discription = "See what information we have about you in the database")
+@bot.slash_command(description= "Changes your steam64ID in the database.")
+async def change_steam64id(inter, steam64id):
+    await inter.response.defer(ephemeral=True)
+    embed = Embed(title='Your steam64id was successfully updated.')
+
+    try:
+        bhlp.change_steam64ID(inter.author, steam64id)
+    except MyException as error:
+        embed = Embed(title= error.message)
+    except OperationalError:
+        embed = Embed(title= "The bot is currently having issues, please try again later.")
+
+    await inter.followup.send(embed= embed, ephemeral=True)
+    return
+
+@bot.slash_command(description = "See what information we have about you in the database.")
 async def get_info(inter):
     await inter.response.defer(ephemeral=True)
 
-    discordID = str(inter.author.id)
     try:
-        player = DatabasePlayer(discordID)
-    except PlayerNotFound as error:
-        await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
-        return
+        embed = bhlp.get_player_info(member = inter.author)
+    except MyException as error:
+        embed = Embed(title= error.message)
     except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
-        return
-    
-    embed = Embed(title=player.name)
-    embed.add_field(name = 'steam64 ID', value= player.steam64ID)
-    embed.add_field(name = 'discord ID', value= player.discordID)
-    embed.add_field(name = 'TPF ID', value= player.TPFID)
-    
-    if player.check_whitelist():
-        whitelist_status = 'Active'
-    else:
-        whitelist_status = 'Inactive'
-    embed.add_field(name = 'Whitelist Status', value = whitelist_status)
-    if player.whitelist_order is not None:
-        embed.add_field(name = 'Whitelist Subscription', value= player.whitelist_order.tier)
+        embed = Embed(title= "The bot is currently having issues, please try again later.")
 
-    await inter.followup.send(embed=embed, ephemeral=True)
+    await inter.followup.send(embed= embed, ephemeral=True)
     return
 
 #########################################
 ########   Whitelist Commands    ########
 #########################################
 
-@bot.slash_command(discription = "Adds a player to your whitelist subscription. They have to be registered and you need to fill in thier Steam64ID")
+@bot.slash_command(description = "Adds a player to your whitelist subscription. Use their Steam64ID.")
 async def add_player_to_whitelist(inter, steam64id: str):
     await inter.response.defer(ephemeral=True)
+    
     try:
-        hlp.check_steam64ID(steam64id)
-    except InvalidSteam64ID as error:
-        await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
-        return
-
-    discordID = str(inter.author.id)
-    try: 
-        owner = DatabasePlayer(discordID)
-        player = SteamPlayer(steam64id)
-        if owner.whitelist_order is None:
-            await inter.followup.send(embed = Embed(title = "It seems like you don't have a whitelist subscription. Make sure you are subscribed on Patreon and reconnect your discord account to Patreon"), ephemeral = True)
-            return
-        else:
-            owner.whitelist_order.add_whitelist(player.TPFID)
-    except (InsufficientTier, PlayerNotFound, DuplicatePlayerPresent) as error:
-        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
-        return
+        embed = bhlp.add_player_to_whitelist(owner_member=inter.author, player_steam64ID=steam64id)
+    except MyException as error:
+        embed = Embed(title= error.message)
     except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
-        return
+        embed = Embed(title= "The bot is currently having issues, please try again later.")  
 
-    embed = Embed(title= player.name + ' has been successfully added to your subscription')
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(discription = "Removes a player from your whitelist subscription. Use their steam64ID.")
+@bot.slash_command(description = "Removes a player from your whitelist subscription. Use their steam64ID.")
 async def remove_player_from_whitelist(inter, steam64id: str):
     await inter.response.defer(ephemeral=True)
-    try:
-        hlp.check_steam64ID(steam64id)
-    except InvalidSteam64ID as error:
-        await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
-        return
-    discordID = str(inter.author.id)
-    try: 
-        owner = DatabasePlayer(discordID)
-        player = SteamPlayer(steam64id)
-        if owner.whitelist_order is None:
-            await inter.followup.send(embed = Embed(title= "You have no whitelist subscription, as such you cannot remove anyone from it"), ephemeral=True)
-            return
 
-        owner.whitelist_order.remove_whitelist(player.TPFID)
-    except (InsufficientTier, PlayerNotFound, WhitelistNotFound, SelfDestruct) as error:
-        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
-        return
+    try:
+        embed = bhlp.remove_player_from_whitelist(owner_member=inter.author, player_steam64ID=steam64id)
+    except MyException as error:
+        embed = Embed(title= error.message)
     except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
-        return
-    embed = Embed(title = player.name + ' has been successfully removed from your subscription')
+        embed = Embed(title= "The bot is currently having issues, please try again later.")  
+
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(discription = "Replaces one player for another on your whitelist subscription. First fill in the steam64Id of who you want to replace, then fill in the steam64ID of who you want to add instead.")
+@bot.slash_command(description = "Replaces one player for another on your subscription. First steam64ID is replaced with the 2nd one.")
 async def update_player_on_whitelist(inter, old_steam64id: str, new_steam64id: str):
     await inter.response.defer(ephemeral=True)
-    try:
-        hlp.check_steam64ID(old_steam64id)
-        hlp.check_steam64ID(new_steam64id)
-    except InvalidSteam64ID as error:
-        await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
-        return
-    discordID = str(inter.author.id)
-
-    try:
-        old_player = SteamPlayer(old_steam64id)
-    except PlayerNotFound:
-        await inter.followup.send(embed = Embed(title= "The old player isn't in our database, and thus cannot be replaced"), ephemeral=True)
-        return
-
-    try:
-        new_player = SteamPlayer(new_steam64id)
-    except PlayerNotFound:
-        await inter.followup.send(embed = Embed(title= "The new player hasn't registered, and thus cannot be added to the whitelist"), ephemeral=True)
-        return
 
     try: 
-        owner = DatabasePlayer(discordID)
-        if owner.whitelist_order is None: #TODO, adjust for single whitelist
-            await inter.followup.send(embed = Embed(title= "You have no whitelist subscription, visit our patreon if you're intrested"), ephemeral=True)
-            return
-        
-        owner.whitelist_order.remove_whitelist(old_player.TPFID)
-        owner.whitelist_order.add_whitelist(new_player.TPFID)
-    except (InsufficientTier, DuplicatePlayerPresent) as error:
-        embed = Embed(title = error.message)
-        try:
-            owner.whitelist_order.add_whitelist(old_player.TPFID)
-        except (InsufficientTier, DuplicatePlayerPresent, OperationalError) as error:
-            embed = Embed(title = "You have successfully broken the bot, I guess you can ping Leon.")
-        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
-        return
-    except (PlayerNotFound, WhitelistNotFound, SelfDestruct) as error:
-        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
-        return
+        embed = bhlp.update_player_on_whitelist(owner_member=inter.author, old_player_steam64ID=old_steam64id, new_player_steam64ID=new_steam64id)
+    except MyException as error:
+        embed = Embed(title= error.message)
     except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
-        return
-    
-    embed = Embed(title = old_player.name + ' has been successfully replaced with ' + new_player.name + '.')
+        embed = Embed(title= "The bot is currently having issues, please try again later.")
+
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(discription = "See the current state of your whitelist subscription in our database")
+@bot.slash_command(description = "See the current state of your whitelist subscription in our database")
 async def get_whitelist_subscription_info(inter):
     await inter.response.defer(ephemeral=True)
-    discordID = str(inter.author.id)
-    try:
-        owner = DatabasePlayer(discordID)
-        if owner.whitelist_order is None:
-            await inter.followup.send(embed = Embed(title= "You have no whitelist subscription, /get_info instead"), ephemeral=True)
-            return
-        else:
-            whitelist_order = owner.whitelist_order
-            whitelistees = []
-            for whitelist in whitelist_order.whitelists:
-                TPFID = whitelist.TPFID
-                try: 
-                    player = TPFIDPlayer(TPFID)
-                    whitelistees.append(player.name)
-
-                except (InsufficientTier, PlayerNotFound, WhitelistNotFound) as error:
-                    await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
-                    return
-                except OperationalError:
-                    await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
-                    return
-            if owner.check_whitelist():
-                whitelist_status = 'Active'
-            else:
-                whitelist_status = 'Inactive'
-            embed = Embed(title = 'Whitelist Subscription: ' + owner.name)
-            embed.add_field(name = 'Tier: ', value= whitelist_order.tier)
-            embed.add_field(name = 'Status: ', value = whitelist_status)
-            embed.add_field(name = 'Whitelists: ', value= whitelistees)
-
-            await inter.followup.send(embed = embed, ephemeral=True)
-            return
-    except PlayerNotFound as error:
-        await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
-        return
-    except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
-        return
     
-
-
+    try:
+        embed = bhlp.get_whitelist_info(member=inter.author)
+    except MyException as error:
+        embed = Embed(title= error.message)
+    except OperationalError:
+        embed = Embed(title= "The bot is currently having issues, please try again later.")
+    
+    await inter.followup.send(embed = embed, ephemeral=True)
+    return
+    
 
 #####################################
 ########   Admin Commands    ########
 #####################################
 
-@bot.slash_command(discription = "Removes a player from the database, including thier whitelist order and whitelists on that order.")
+@bot.slash_command(description = "Removes a player from the database, including thier whitelist order and whitelists on that order.")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def admin_nuke_player(inter, discordid: str, steam64id: str):
     await inter.response.defer(ephemeral=True)
-    try:
-        hlp.check_discordID(discordid)
-        hlp.check_steam64ID(steam64id)
-    except (InvalidSteam64ID, InvalidDiscordID) as error:
-        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
-        return
-    
-    try:
-        player = DatabasePlayer(discordid)
-        if player.steam64ID == steam64id:
-            player.delete_player()
-        else:
-            await inter.followup.send(embed = Embed(title = 'The steam64ID does not match with the discordID, thus the player was not deleted. ', ephemeral = True))
-            return
-    except (PlayerNotFound) as error:
-        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
-        return
-    except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later."), ephemeral=True)
-        return
 
-    embed = Embed(title = player.name + ' has been successfully deleted from the database.')
+    try:
+        p1 = bhlp.get_player(discordID = discordid)
+        p2 = bhlp.get_player(steam64ID = steam64id)
+        if p1 == p2:
+            bhlp.remove_player(discordid)
+            embed = Embed(title=p1.name + ' has been successfully deleted from the database.')
+        else:
+            embed = Embed(title="The discordID and steam64ID don't match, double check and try again. If the issue persists you can annoy Leon I gues...")
+    except MyException as error:
+        embed = Embed(title= error.message)
+    except OperationalError:
+        embed = Embed(title= "The bot is currently having issues, please try again later.")
+
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(discription = "Get player info on player")
+@bot.slash_command(description = "Get player info on player")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def admin_get_player_info(inter, discordid: str):
     await inter.response.defer()
     try:
-        hlp.check_discordID(discordid)
-    except InvalidDiscordID as error:
-        await inter.followup.send(embed = Embed(title= error.message))
-        return
-
-    discordID = discordid
-    try:
-        player = DatabasePlayer(discordID)
-    except PlayerNotFound as error:
-        await inter.followup.send(embed = Embed(title= error.message))
-        return
+        embed = bhlp.get_player_info(discordID=discordid)
+    except MyException as error:
+        embed = Embed(title= error.message)
     except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"))
-        return
+        embed = Embed(title= "The bot is currently having issues, please try again later.")
     
-    embed = Embed(title=player.name)
-    embed.add_field(name = 'steam64 ID', value= player.steam64ID)
-    embed.add_field(name = 'discord ID', value= player.discordID)
-    embed.add_field(name = 'TPF ID', value= player.TPFID)
-    
-    if player.check_whitelist():
-        whitelist_status = 'Active'
-    else:
-        whitelist_status = 'Inactive'
-    embed.add_field(name = 'Whitelist Status', value = whitelist_status)
-    if player.whitelist_order is not None:
-        embed.add_field(name = 'Whitelist Subscription', value= player.whitelist_order.tier)
-
     await inter.followup.send(embed=embed)
     return
 
-@bot.slash_command(discription = "Get whitelist info on players whitelist subscription")
+@bot.slash_command(description = "Get whitelist info on players whitelist subscription")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def admin_get_whitelist_info(inter, discordid: str):
     await inter.response.defer()
+    
     try:
-        hlp.check_discordID(discordid)
-    except InvalidDiscordID as error:
-        await inter.followup.send(embed = Embed(title= error.message))
-        return
-
-    discordID = discordid
-    try:
-        owner = DatabasePlayer(discordID)
-        if owner.whitelist_order is None:
-            await inter.followup.send(embed = Embed(title= "You have no whitelist subscription, /get_info instead"))
-            return
-        else:
-            whitelist_order = owner.whitelist_order
-            whitelistees = []
-            for whitelist in whitelist_order.whitelists:
-                TPFID = whitelist.TPFID
-                try: 
-                    player = TPFIDPlayer(TPFID)
-                    whitelistees.append(player.name)
-
-                except (InsufficientTier, PlayerNotFound, WhitelistNotFound) as error:
-                    await inter.followup.send(embed = Embed(title = error.message))
-                    return
-                except OperationalError:
-                    await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"))
-                    return
-            if owner.check_whitelist():
-                whitelist_status = 'Active'
-            else:
-                whitelist_status = 'Inactive'
-            embed = Embed(title = 'Whitelist Subscription: ' + owner.name)
-            embed.add_field(name = 'Tier: ', value= whitelist_order.tier)
-            embed.add_field(name = 'Status: ', value = whitelist_status)
-            embed.add_field(name = 'Whitelists: ', value= whitelistees)
-
-            await inter.followup.send(embed = embed)
-            return
-    except PlayerNotFound as error:
-        await inter.followup.send(embed = Embed(title= error.message))
-        return
+        embed = bhlp.get_whitelist_info(discordID= discordid)
+    except MyException as error:
+        embed = Embed(title= error.message)
     except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"))
-        return
+        embed = Embed(title= "The bot is currently having issues, please try again later.")
+
+    await inter.followup.send(embed=embed)
+    return
 
 #####################################
 #########   Leon Commands    ########
 #####################################
 
-@bot.slash_command(discription = "Imports whitelist from the spreadsheet, don't touch unless you're caleed Leon")
+@bot.slash_command(description = "Imports whitelist from the spreadsheet, don't touch unless you're caleed Leon")
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def import_spreadsheet(inter):
     await inter.response.defer(ephemeral=True)
@@ -453,7 +252,7 @@ async def import_spreadsheet(inter):
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(discription = "Does the database setup, don't touch unless you're called Leon")
+@bot.slash_command(description = "Does the database setup, don't touch unless you're called Leon")
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def setup_database(inter):
     await inter.response.defer()
@@ -466,7 +265,7 @@ async def setup_database(inter):
     await inter.followup.send(embed = embed)
     return
 
-@bot.slash_command(discription = "dont worry")
+@bot.slash_command(description = "dont worry")
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def get_role_ids(inter):
     await inter.response.defer()
