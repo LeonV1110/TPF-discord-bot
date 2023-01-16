@@ -40,6 +40,7 @@ def convert_role_to_tier(roles):
 
 def check_steam64ID(steam64ID: str):
     #check if int
+    str(steam64ID)
     try:
         int(steam64ID)
     except:
@@ -58,6 +59,7 @@ def check_steam64ID(steam64ID: str):
     return 
 
 def check_discordID(discordID: str):
+    str(discordID)
     try:
         int(discordID)
     except:
@@ -68,7 +70,6 @@ def check_discordID(discordID: str):
         raise InvalidDiscordID("A discordID is 18 characters long, this one is too long.")
     return
 
-    
 def get_max_whitelists(tier):
     tierDict = {'whitelist': 1, 'farmer': 2, 'council': 5, 'show_off': 10}
     return tierDict[tier]
