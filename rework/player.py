@@ -35,13 +35,13 @@ class Player():
         if self.whitelist_order is not None:
             self.whitelist_order.delete_order()
         #Delete any whitelists
-        sql = "DELETE FROM `whitelist` WHERE 'TPFID` = %s"
+        sql = "DELETE FROM `whitelist` WHERE `TPFID` = %s "
         vars = (self.TPFID)
         excecute_query(sql, vars)
 
         #Delete the actual player
-        sql = "DELETE FROM `player` WHERE `steam64ID` = %s"
-        vars = (self.steam64ID)
+        sql = "DELETE FROM `player` WHERE `TPFID` = %s"
+        vars = (self.TPFID)
         excecute_query(sql, vars)
         return
 
@@ -63,7 +63,13 @@ class Player():
         return
 
     def update_steam64ID(self, steam64ID: str):
+        sql = "SELECT * FROM `player` WHERE `steam64ID` = %s AND NOT `TPFID` = %s"
+        vars = (steam64ID, self.TPFID)
+        res = excecute_query(sql, vars, 1)
+        if bool(res):
+            raise DuplicatePlayerPresent()
         self.steam64ID = steam64ID
+        
         sql = "UPDATE `player` SET `steam64ID` = %s WHERE `TPFID` = %s"
         vars = (steam64ID, self.TPFID)
         excecute_query(sql, vars)
@@ -152,7 +158,7 @@ class ListPlayer(Player):
         self.permission = Permission(self.TPFID, ListPlayer.get_permision(self.TPFID)) 
         try:
             self.whitelist_order = DatabaseWhitelistOrder(self.TPFID)
-        except:
+        except: #TODO, except specific error
             pass
         #Patreon ID not implemented as it's unused
         return
@@ -181,7 +187,10 @@ class SteamPlayer(ListPlayer):
         sql = "SELECT * FROM `player` WHERE `steam64ID` = %s"
         vars = (steam64ID)
         player_list = excecute_query(sql, vars, 1)
-        super().__init__(player_list)
+        if bool(player_list):
+            super().__init__(player_list)
+        else:
+            raise PlayerNotFound("There is no player connected to this steam64ID")
         return
 
 class TPFIDPlayer(ListPlayer):
@@ -189,5 +198,8 @@ class TPFIDPlayer(ListPlayer):
         sql = "SELECT * FROM `player` WHERE `TPFID` = %s"
         vars = (TPFID)
         player_list = excecute_query(sql, vars, 1)
-        super().__init__(player_list)
+        if bool(player_list):
+            super().__init__(player_list)
+        else:
+            raise PlayerNotFound("There is no player connected to this TPFID")
         return

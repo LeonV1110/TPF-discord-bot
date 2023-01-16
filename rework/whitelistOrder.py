@@ -3,7 +3,7 @@ import random
 from database import excecute_query
 from whitelist import Whitelist
 from helper import get_max_whitelists
-from error import InsuffientTier, WhitelistNotFound
+from error import InsufficientTier, WhitelistNotFound, SelfDestruct, DuplicatePlayerPresent
 
 class WhitelistOrder():
     TPFID: str
@@ -43,35 +43,41 @@ class WhitelistOrder():
         self.tier = tier
 
         if self.active:
-            if len(self.whitelists) > get_max_whitelists(tier):
+            if len(self.whitelists) > get_max_whitelists(tier): #TODO: triggers when it shouldn't, I think
                 self.active = False
         else:
             if len(self.whitelists) <= get_max_whitelists(tier):
                 self.active = True
-        
-        sql = "UPDATE `whitelist_order` SET (`active`, `tier`) VALUES (%s, %s) WHERE `ORDERID` = %s"
+
+        sql = "UPDATE `whitelist_order` SET `active` = %s, `tier` = %s WHERE `ORDERID` = %s"
         vars = (int(self.active), tier , self.orderID)
         excecute_query(sql, vars)
 
-        if self.active == False: raise InsuffientTier()
-        else: return
+        #Raise insuffientTier error if the order tier is to low
+        if not self.active: raise InsufficientTier()
+        return
 
     def add_whitelist(self, TPFID: str):
-        if len(self.whitelists) <= get_max_whitelists(self.tier):
+        for whitelist in self.whitelists:
+            if whitelist.TPFID == TPFID:
+                raise DuplicatePlayerPresent("This player is already present on your whitelist subscription.")
+
+        if len(self.whitelists) + 1 <= get_max_whitelists(self.tier): # + 1 for the newly added whitelist
             whitelist = Whitelist(TPFID, self.orderID)
             whitelist.whitelist_to_DB()
         else:
-            raise InsuffientTier()
+            raise InsufficientTier("Your whitelist subscription tier is insufficient to add any more whitelists")
         return
 
     def remove_whitelist(self, TPFID: str):
+        if TPFID == self.TPFID:
+            raise SelfDestruct()
         for whitelist in self.whitelists:
             if whitelist.TPFID == TPFID:
                 whitelist.delete_whitelist()
                 self.whitelists.remove(whitelist)
-            else:
-                raise WhitelistNotFound()
-        return
+                return
+        raise WhitelistNotFound()
 
 
 class NewWhitelistOrder(WhitelistOrder):
@@ -114,7 +120,7 @@ class DatabaseWhitelistOrder(WhitelistOrder):
         for wl_dict in res:
             whitelist = Whitelist(wl_dict['TPFID'], wl_dict['orderID'])
             wl_list.append(whitelist)
-        return whitelist
+        return wl_list
 
 class OrderIDWhitelistOrder(WhitelistOrder):
      def __init__(self, orderID: str):

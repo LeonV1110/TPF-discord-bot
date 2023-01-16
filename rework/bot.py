@@ -5,7 +5,7 @@ from player import Player, NewPlayer, DatabasePlayer, SteamPlayer, TPFIDPlayer
 import helper as hlp
 import os
 from dotenv import load_dotenv
-from error import PlayerNotFound, InvalidSteam64ID, InvalidDiscordID, DuplicatePlayerPresent, InsuffientTier, WhitelistNotFound
+from error import PlayerNotFound, InvalidSteam64ID, InvalidDiscordID, DuplicatePlayerPresent, InsufficientTier, WhitelistNotFound, SelfDestruct
 from pymysql import OperationalError
 
 load_dotenv()
@@ -36,7 +36,7 @@ async def on_member_update(before, after):
         permission = hlp.convert_role_to_perm(roles)
         name = after.name + "#" + after.discriminator
         player.update(player.steam64ID, discordID, name, permission, tier)
-    except (PlayerNotFound, OperationalError):
+    except (PlayerNotFound, OperationalError, InsufficientTier):
         #TODO, log these errors
         pass
     
@@ -60,6 +60,7 @@ async def on_member_remove(member):
 @bot.slash_command(discription = "Link your steam64ID with your discord account in our database") 
 #Also actives whitelist and perms if role is present
 async def register(inter, steam64id: str):
+    #TODO, make it add the whitelist stuff
     await inter.response.defer(ephemeral=True)
     try:
         hlp.check_steam64ID(steam64id)
@@ -125,7 +126,7 @@ async def update_data(inter, steam64id: str):
     try:
         player = DatabasePlayer(discordID)
         player.update(steam64id, discordID, name, permission, tier)
-    except PlayerNotFound as error:
+    except (PlayerNotFound, DuplicatePlayerPresent, InsufficientTier) as error:
         await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
         return
     except OperationalError:
@@ -188,7 +189,7 @@ async def add_player_to_whitelist(inter, steam64id: str):
             return
         else:
             owner.whitelist_order.add_whitelist(player.TPFID)
-    except (InsuffientTier, PlayerNotFound) as error:
+    except (InsufficientTier, PlayerNotFound, DuplicatePlayerPresent) as error:
         await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
         return
     except OperationalError:
@@ -207,12 +208,16 @@ async def remove_player_from_whitelist(inter, steam64id: str):
     except InvalidSteam64ID as error:
         await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
         return
-    discordID = str(inter.autho.id)
+    discordID = str(inter.author.id)
     try: 
         owner = DatabasePlayer(discordID)
         player = SteamPlayer(steam64id)
+        if owner.whitelist_order is None:
+            await inter.followup.send(embed = Embed(title= "You have no whitelist subscription, as such you cannot remove anyone from it"), ephemeral=True)
+            return
+
         owner.whitelist_order.remove_whitelist(player.TPFID)
-    except (InsuffientTier, PlayerNotFound, WhitelistNotFound) as error:
+    except (InsufficientTier, PlayerNotFound, WhitelistNotFound, SelfDestruct) as error:
         await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
         return
     except OperationalError:
@@ -231,20 +236,44 @@ async def update_player_on_whitelist(inter, old_steam64id: str, new_steam64id: s
     except InvalidSteam64ID as error:
         await inter.followup.send(embed = Embed(title= error.message), ephemeral=True)
         return
-    discordID = str(inter.autho.id)
+    discordID = str(inter.author.id)
+
+    try:
+        old_player = SteamPlayer(old_steam64id)
+    except PlayerNotFound:
+        await inter.followup.send(embed = Embed(title= "The old player isn't in our database, and thus cannot be replaced"), ephemeral=True)
+        return
+
+    try:
+        new_player = SteamPlayer(new_steam64id)
+    except PlayerNotFound:
+        await inter.followup.send(embed = Embed(title= "The new player hasn't registered, and thus cannot be added to the whitelist"), ephemeral=True)
+        return
+
     try: 
         owner = DatabasePlayer(discordID)
-        old_player = SteamPlayer(old_steam64id)
-        new_player = SteamPlayer(new_steam64id)
+        if owner.whitelist_order is None: #TODO, adjust for single whitelist
+            await inter.followup.send(embed = Embed(title= "You have no whitelist subscription, visit our patreon if you're intrested"), ephemeral=True)
+            return
+        
         owner.whitelist_order.remove_whitelist(old_player.TPFID)
         owner.whitelist_order.add_whitelist(new_player.TPFID)
-    except (InsuffientTier, PlayerNotFound, WhitelistNotFound) as error:
+    except (InsufficientTier, DuplicatePlayerPresent) as error:
+        embed = Embed(title = error.message)
+        try:
+            owner.whitelist_order.add_whitelist(old_player.TPFID)
+        except (InsufficientTier, DuplicatePlayerPresent, OperationalError) as error:
+            embed = Embed(title = "You have successfully broken the bot, I guess you can ping Leon.")
+        await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
+        return
+    except (PlayerNotFound, WhitelistNotFound, SelfDestruct) as error:
         await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
         return
     except OperationalError:
         await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
         return
-    embed = Embed(title = old_player.name + ' has been successfully replaces with' + new_player.name + '.')
+    
+    embed = Embed(title = old_player.name + ' has been successfully replaced with ' + new_player.name + '.')
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
@@ -266,7 +295,7 @@ async def get_whitelist_subscription_info(inter):
                     player = TPFIDPlayer(TPFID)
                     whitelistees.append(player.name)
 
-                except (InsuffientTier, PlayerNotFound, WhitelistNotFound) as error:
+                except (InsufficientTier, PlayerNotFound, WhitelistNotFound) as error:
                     await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
                     return
                 except OperationalError:
@@ -319,7 +348,7 @@ async def admin_nuke_player(inter, discordid: str, steam64id: str):
         await inter.followup.send(embed = Embed(title = error.message), ephemeral = True)
         return
     except OperationalError:
-        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later"), ephemeral=True)
+        await inter.followup.send(embed = Embed(title= "the bot is currently having issues, please try again later."), ephemeral=True)
         return
 
     embed = Embed(title = player.name + ' has been successfully deleted from the database.')
@@ -387,7 +416,7 @@ async def admin_get_whitelist_info(inter, discordid: str):
                     player = TPFIDPlayer(TPFID)
                     whitelistees.append(player.name)
 
-                except (InsuffientTier, PlayerNotFound, WhitelistNotFound) as error:
+                except (InsufficientTier, PlayerNotFound, WhitelistNotFound) as error:
                     await inter.followup.send(embed = Embed(title = error.message))
                     return
                 except OperationalError:
