@@ -47,7 +47,7 @@ def check_steam64ID(steam64ID: str):
         raise InvalidSteam64ID("A steam64ID contains just numbers.")
     #check if not default steam64ID
     if (steam64ID == str(76561197960287930)):
-        raise InvalidSteam64ID("This is Gabe Newell's steam64ID, please make sure to enter yours.")
+        raise InvalidSteam64ID("This is Gabe Newell's steam64ID, please make sure to enter the correct one.")
     #check if first numbers match
     if (not steam64ID[0:7] == "7656119"):
        raise InvalidSteam64ID("This is not a valid steam64ID.")

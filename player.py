@@ -4,7 +4,7 @@ from database import excecute_query
 from permission import Permission
 from whitelistOrder import (DatabaseWhitelistOrder, NewWhitelistOrder,
                             WhitelistOrder, OrderIDWhitelistOrder)
-from error import PlayerNotFound, DuplicatePlayerPresent
+from error import PlayerNotFound, DuplicatePlayerPresent, DuplicatePlayerPresentSteam, DuplicatePlayerPresentDiscord
 
 class Player():
     TPFID: str
@@ -27,12 +27,22 @@ class Player():
         return
 
     def check_duplicate_player(self):
-        sql = "SELECT * FROM `player` WHERE `steam64ID` = %s OR `discordID` = %s"
-        vars = (self.steam64ID, self.discordID)
+        self.check_duplicate_player_steam()
+        self.check_duplicate_player_discord()
+
+    def check_duplicate_player_steam(self):
+        sql = "SELECT * FROM `player` WHERE `steam64ID` = %s"
+        vars = (self.steam64ID)
         res = excecute_query(sql, vars, 1)
-        if bool(res): raise DuplicatePlayerPresent()
+        if bool(res): raise DuplicatePlayerPresentSteam()
         else: return
 
+    def check_duplicate_player_discord(self):
+        sql = "SELECT * FROM `player` WHERE `discordID` = %s"
+        vars = (self.discordID)
+        res = excecute_query(sql, vars, 1)
+        if bool(res): raise DuplicatePlayerPresentDiscord()
+        else: return
 
     def delete_player(self):
         if self.whitelist_order is not None:
@@ -121,7 +131,7 @@ class Player():
         vars = (steam64ID, self.TPFID)
         res = excecute_query(sql, vars, 1)
         if bool(res):
-            raise DuplicatePlayerPresent()
+            raise DuplicatePlayerPresentSteam()
         return
 
 ###########################

@@ -12,6 +12,21 @@ class DuplicatePlayerPresent(MyException):
         self.message = message
         super().__init__(self.message)
 
+class DuplicatePlayerPresentSteam(DuplicatePlayerPresent):
+    def __init__(self, message="There is already a player with this steam64 ID."):
+        self.message = message
+        super().__init__(self.message)
+
+class DuplicatePlayerPresentDiscord(DuplicatePlayerPresent):
+    def __init__(self, message="There is already a player with this discord ID."):
+        self.message = message
+        super().__init__(self.message)
+
+class DuplicatePlayerPresentTPFID(DuplicatePlayerPresent):
+    def __init__(self, message="There is already a player with this TPFID."):
+        self.message = message
+        super().__init__(self.message)
+
 class InvalidSteam64ID(MyException):
     def __init__(self, message = "This is not a valid steam64ID."):
         self.message = message

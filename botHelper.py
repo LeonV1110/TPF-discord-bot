@@ -8,7 +8,7 @@ from pymysql import OperationalError
 
 #Raises: InvalidSteam64ID, InvalidDiscordID, PlayerNotFound
 def update_player_from_member(member: Member):
-    discordID = member.id
+    discordID = str(member.id)
     player= get_player(discordID= discordID)
     tier = hlp.convert_role_to_tier(member.roles)
     permission = hlp.convert_role_to_perm(member.roles)
@@ -41,7 +41,7 @@ def register_player(member: Member, steam64ID: str):
 
 def remove_player(member: Member = None, discordID: str = None, steam64ID: str = None, TPFID: str = None):
     if member is not None:
-        discordID = member.id
+        discordID = str(member.id)
     
     player = get_player(discordID, steam64ID, TPFID)
     player.delete_player()
@@ -60,13 +60,13 @@ def change_steam64ID(member: Member, steam64ID: str):
 
 def get_player_info(member: Member = None, discordID: str = None, steam64ID: str = None, TPFID: str = None) -> Embed:
     if member is not None:
-        discordID = member.id
+        discordID = str(member.id)
     player = get_player(discordID, steam64ID, TPFID)
 
     embed = Embed(title=player.name)
-    embed.add_field(name = 'steam64 ID', value= player.steam64ID)
-    embed.add_field(name = 'discord ID', value= player.discordID)
-    embed.add_field(name = 'TPF ID', value= player.TPFID)
+    embed.add_field(name = 'steam64 ID', value= str(player.steam64ID))
+    embed.add_field(name = 'discord ID', value= str(player.discordID))
+    embed.add_field(name = 'TPF ID', value= str(player.TPFID))
 
     if player.check_whitelist():
         whitelist_status = 'Active'
@@ -81,7 +81,7 @@ def get_player_info(member: Member = None, discordID: str = None, steam64ID: str
 def add_player_to_whitelist(owner_member: Member = None, owner_discordID: str = None, owner_steam64ID: str = None, owner_TPFID: str = None,
 player_discordID: str = None, player_steam64ID: str = None, player_TPFID: str = None) -> Embed:
     if owner_member is not None:
-        owner_discordID = owner_member.id
+        owner_discordID = str(owner_member.id)
 
     owner = get_player(owner_discordID, owner_steam64ID, owner_TPFID)
     player = get_player(player_discordID, player_steam64ID, player_TPFID)
@@ -95,7 +95,7 @@ player_discordID: str = None, player_steam64ID: str = None, player_TPFID: str = 
 def remove_player_from_whitelist(owner_member: Member = None, owner_discordID: str = None, owner_steam64ID: str = None, owner_TPFID: str = None,
 player_discordID: str = None, player_steam64ID: str = None, player_TPFID: str = None) -> Embed:
     if owner_member is not None:
-        owner_discordID = owner_member.id
+        owner_discordID = str(owner_member.id)
 
     owner = get_player(owner_discordID, owner_steam64ID, owner_TPFID)
     player = get_player(player_discordID, player_steam64ID, player_TPFID)
@@ -110,7 +110,7 @@ def update_player_on_whitelist(owner_member: Member = None, owner_discordID: str
 old_player_discordID: str = None, old_player_steam64ID: str = None, old_player_TPFID: str = None,
 new_player_discordID: str = None, new_player_steam64ID: str = None, new_player_TPFID: str = None) -> Embed:
     if owner_member is not None:
-        owner_discordID = owner_member.id
+        owner_discordID = str(owner_member.id)
 
     owner = get_player(owner_discordID, owner_steam64ID, owner_TPFID)
     try:
@@ -142,7 +142,7 @@ new_player_discordID: str = None, new_player_steam64ID: str = None, new_player_T
 
 def get_whitelist_info(member: Member = None, discordID:str = None, steam64ID: str = None, TPFID: str = None):
     if member is not None:
-        discordID = member.id
+        discordID = str(member.id)
 
     player = get_player(discordID, steam64ID, TPFID)
 
@@ -153,7 +153,7 @@ def get_whitelist_info(member: Member = None, discordID:str = None, steam64ID: s
     whitelistees = []
     for whitelist in wo.whitelists:
         player = get_player(TPFID=whitelist.TPFID)
-        whitelistees.append(player.name)
+        whitelistees.append((player.name, player.steam64ID))
     
     if player.check_whitelist():
         whitelist_status = 'Active'

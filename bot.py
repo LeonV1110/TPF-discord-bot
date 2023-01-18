@@ -201,7 +201,7 @@ async def admin_nuke_player(inter, discordid: str, steam64id: str):
             bhlp.remove_player(discordid)
             embed = Embed(title=p1.name + ' has been successfully deleted from the database.')
         else:
-            embed = Embed(title="The discordID and steam64ID don't match, double check and try again. If the issue persists you can annoy Leon I gues...")
+            embed = Embed(title="The discordID and steam64ID don't match, double check and try again. If the issue persists you can annoy Leon I guess...")
     except MyException as error:
         embed = Embed(title= error.message)
     except OperationalError:
