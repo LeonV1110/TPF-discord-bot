@@ -9,13 +9,13 @@ class WhitelistOrder():
     TPFID: str
     orderID: str
     tier: str #TODO, maybe make into a tierclass instead of a String
-    whitelists: list[Whitelist]
+    whitelists: list
     active: bool
     
     def __eq__(self, __o: object) -> bool:
         return self.__dict__ == __o.__dict__
 
-    def __init__(self, TPFID: str, orderID: str, tier: str, whitelists: list[Whitelist] = [], active: bool = True):
+    def __init__(self, TPFID: str, orderID: str, tier: str, whitelists: list = [], active: bool = True):
         self.TPFID = TPFID
         self.orderID = orderID
         self.tier = tier
@@ -114,7 +114,7 @@ class DatabaseWhitelistOrder(WhitelistOrder):
         super().__init__(TPFID, orderID, tier, whitelists, active)
 
     @staticmethod
-    def get_all_whitelists(orderID) -> list[Whitelist]:
+    def get_all_whitelists(orderID) -> list:
         sql = "select * from `whitelist` where `orderID` = %s"
         vars = (orderID)
         res = excecute_query(sql, vars, format= 2)

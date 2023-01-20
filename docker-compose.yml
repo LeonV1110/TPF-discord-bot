@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  tpfdiscordbot:
+    image: tpfdiscordbot
+    build:
+      context: .
+      dockerfile: ./Dockerfile
