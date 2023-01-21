@@ -2,6 +2,7 @@ import os
 
 import botHelper as bhlp
 import disnake
+import whitelistSpreadsheet
 from disnake import Embed, Interaction
 from disnake.ext import commands
 from dotenv import load_dotenv
@@ -37,7 +38,6 @@ async def on_member_update(before, after):
 
 @bot.event
 async def on_member_remove(member):
-    discordID = member.id
     try:
         bhlp.update_player_from_member(member) #TODO, test if the member object is stripped of its roles when the player leaves
         # currently does not remove the whitelist or player entry, meaning a player can safely leave the discord if they're not the order owner
@@ -247,8 +247,15 @@ async def admin_get_whitelist_info(inter, discordid: str):
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def import_spreadsheet(inter):
     await inter.response.defer(ephemeral=True)
-    #TODO
-    embed = Embed(title = '')
+    embed = Embed(title = 'Done!')
+
+    try:
+        whitelistSpreadsheet.import_spreadsheet(bot)
+    except MyException as error:
+        embed = Embed(title= error.message)
+    except OperationalError:
+        embed = Embed(title= "The bot is currently having issues, please try again later.")
+    
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
