@@ -23,7 +23,10 @@ class Player():
         sql = "INSERT INTO `player` (`TPFID`, `steam64ID`, `discordID`, `name`, `patreonID`) VALUES (%s, %s, %s, %s, %s)"
         vars = (self.TPFID, self.steam64ID, self.discordID, self.name, self.patreonID)
         excecute_query(sql, vars, 3) 
-        self.whitelist_order.order_to_DB()
+        if self.whitelist_order is not None:
+            self.whitelist_order.order_to_DB()
+        if self.permission is not None:
+            self.permission.permission_to_DB()
         return
 
     def check_duplicate_player(self):
@@ -47,6 +50,8 @@ class Player():
     def delete_player(self):
         if self.whitelist_order is not None:
             self.whitelist_order.delete_order()
+        if self.permission is not None:
+            self.permission.delete_permission()
         #Delete any whitelists
         sql = "DELETE FROM `whitelist` WHERE `TPFID` = %s "
         vars = (self.TPFID)
@@ -103,6 +108,10 @@ class Player():
         pass 
 
     def update_permission(self, permission: str):
+        if self.permission is None:
+            
+            self.permission = Permission(self.TPFID, permission)
+            self.permission.permission_to_DB()
         self.permission.update_permission(permission)
         return
 
@@ -171,11 +180,15 @@ class ListPlayer(Player):
         self.discordID = pl["discordID"]
         self.name = pl["name"]
         self.TPFID = pl["TPFID"]
-        self.permission = Permission(self.TPFID, ListPlayer.get_permision(self.TPFID)) 
+        if ListPlayer.get_permision(self.TPFID) is not None:
+            self.permission = Permission(self.TPFID, ListPlayer.get_permision(self.TPFID))
+        else:
+            self.permission = None 
         try:
             self.whitelist_order = DatabaseWhitelistOrder(self.TPFID)
         except:
             pass
+        # TODO handle whitelist order and permission in the same way
         #Patreon ID not implemented as it's unused
         return
     
