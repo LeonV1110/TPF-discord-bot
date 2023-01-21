@@ -1,10 +1,12 @@
 warn players that they're whitelisted in 2 whitelist subscriptions
 Maybe write unit tests
-Handle the creation of the whitelist file
-    Potentially have the server request the whitelist file
+create seperate docker container for whitelistDoc.py
 
-Create import spreadsheet functionality
 
 figure out database with docker
 
 Hosting!
+
+Make sure all cmds are sent from the TPF discord
+
+make get info and get whitelist info look nicer

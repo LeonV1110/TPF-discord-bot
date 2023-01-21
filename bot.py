@@ -4,10 +4,12 @@ import botHelper as bhlp
 import disnake
 import whitelistSpreadsheet
 from disnake import Embed, Interaction
+from disnake.ui import View, Button
 from disnake.ext import commands
 from dotenv import load_dotenv
 from error import MyException
 from pymysql import OperationalError
+import buttonCallbacks as bcb
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -49,7 +51,7 @@ async def on_member_remove(member):
 ########   Player Commands    ###########
 #########################################
 
-@bot.slash_command(description = "Link your steam64ID with your discord account in our database") 
+@bot.slash_command(description = "Link your steam64ID with your discord account in our database.") 
 #Also actives whitelist and perms if role is present
 async def register(inter, steam64id: str):
     await inter.response.defer(ephemeral=True)
@@ -170,7 +172,7 @@ async def update_player_on_whitelist(inter, old_steam64id: str, new_steam64id: s
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(description = "See the current state of your whitelist subscription in our database")
+@bot.slash_command(description = "See the current state of your whitelist subscription in our database.")
 async def get_whitelist_subscription_info(inter):
     await inter.response.defer(ephemeral=True)
     
@@ -210,7 +212,7 @@ async def admin_nuke_player(inter, discordid: str, steam64id: str):
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(description = "Get player info on player")
+@bot.slash_command(description = "Get player info on player.")
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def admin_get_player_info(inter, discordid: str):
     await inter.response.defer()
@@ -243,7 +245,7 @@ async def admin_get_whitelist_info(inter, discordid: str):
 #########   Leon Commands    ########
 #####################################
 
-@bot.slash_command(description = "Imports whitelist from the spreadsheet, don't touch unless you're caleed Leon")
+@bot.slash_command(description = "Imports whitelist from the spreadsheet, don't touch unless you're called Leon")
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def import_spreadsheet(inter):
     await inter.response.defer(ephemeral=True)
@@ -259,14 +261,14 @@ async def import_spreadsheet(inter):
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(description = "Does the database setup, don't touch unless you're called Leon")
+@bot.slash_command(description = "Does the database setup, don't touch unless you're called Leon.")
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def setup_database(inter):
     await inter.response.defer()
     try: 
         setup_database()
     except:
-        await inter.followup.send(embed = Embed(title= 'I have made a booboo, please go fix it'))
+        await inter.followup.send(embed = Embed(title= 'I have made a booboo, please go fix it.'))
         return
     embed = Embed(title = 'Done')
     await inter.followup.send(embed = embed)
@@ -281,6 +283,78 @@ async def get_role_ids(inter):
         print(role)
         print(role.id)
     await inter.followup.send(embed = Embed(title= "Boo"))
+    return
+
+
+@bot.slash_command(description = "Dont worry, don't touch unless you're called Leon.")
+@commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
+async def testing(inter):
+    await inter.response.defer()
+    embed = Embed(title= "Boo", colour = disnake.Colour.gold(), description="aardappels")
+    embed.set_footer(text = "idk")
+
+    view = disnake.ui.View()
+    view.add_item(disnake.ui.Button(label='test'))
+    await inter.followup.send(embed = embed, view= view)
+    return
+
+@bot.slash_command(description = "Dont worry, don't touch unless you're called Leon.")
+@commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
+async def explain_embed(inter):
+    await inter.response.defer()
+    embed = Embed(title= 'The TPF whitelist bot', colour= disnake.Colour.dark_gold())#TODO fix colour
+    embed.add_field(name = '/register', value = '''
+        Register yourself in the database by using this command, in this command you wil have to input your Steam64 ID. Hit enter when you are done and wait for the bot to complete the procces. \n
+	    - To find your Steam64 ID go to the settings page on your steam account and click on the "View Account Details" option. A new page will open in steam, at the top it will state "Steam64 ID: 7656119xxxxxxxxxx" (with the x's being unique to your account). This is your steam64ID that you need to use when registering.
+        ''', inline= False)
+    embed.add_field(name = '/remove_myself_from_database', value = '''
+        If for whatever reason you want to remove yourself from the database you can use this command. \n
+        -NOTE: this means that you and the potential other players on your whitelist will no longer be whitelisted on our servers!
+        ''', inline= False)
+    embed.add_field(name = '/change_steam64id', value = '''
+        To change your Steam64 ID use this command and enter your (new) Steam64 ID.
+        ''', inline= False)
+    embed.add_field(name = '/get_info', value = '''
+        Use this command or press the button below to check if you are whitelisted.\n
+        - If you notice that the Steam64 ID you provided is wrong use the command /change_steam64id
+        - If the "whitelist status" shows "Active" you are sucessfully whitelisted, thank you for your contribution!
+        - If the "whitelist status" shows "Inactive" you likely do not have the whitelist role, try reconnecting your patreon to discord and confirm your patreon subscription.
+        ''', inline= False)
+    embed.add_field(name = '/update_data', value = '''
+        If the database has not recognized your (Discord) Whitelist role yet, use this command or the button below to force it to update.
+        ''', inline= False)
+    embed.add_field(name = '/add_player_to_whitelist', value = '''
+        This command is used to add a player to your whitelist subscription, do make sure that you have a whitelist of a sufficient tier.
+        This command will ask you to provide a Steam64 ID from those that you want to add. Make sure that they give you the Steam64 ID that they used to register with.
+        ''', inline= False)
+    embed.add_field(name = '/remove_player_from_whitelist', value = '''
+        This command will remove players from your whitelist subscription. 
+        This command will ask you to provide a Steam64 ID from those that you want to remove. Make sure you got the correct one by using the command /get_whitelist_subscription_info.
+        ''', inline= False)
+    embed.add_field(name = '/update_player_from_whitelist', value = '''
+        This command will replace one player for another on your whitelist subscription. 
+        First provide the Steam64 ID you want to replace, then provide the Steam64 ID you want to add.
+        ''', inline= False)
+    embed.add_field(name = '/get_whitelist_subscription_info', value = '''
+        Use this command or press the button below to check who is on your whitelist subscription and if it's active or not.
+        ''', inline= False)
+
+    
+    get_info_button = Button(label= 'Get My Info')
+    get_info_button.callback = bcb.get_info_button_callback
+
+    update_data_button = Button(label='Update My Data')
+    update_data_button.callback = bcb.update_data_button_callback
+
+    get_whitelist_info_button = Button(label= 'Get My Whitelist Info')
+    get_whitelist_info_button.callback = bcb.get_whitelist_info_button_callback
+
+    view = View()
+    view.add_item(get_info_button)
+    view.add_item(update_data_button)
+    view.add_item(get_whitelist_info_button)
+
+    await inter.followup.send(embed = embed, view= view)
     return
 
 bot.run(TOKEN)
