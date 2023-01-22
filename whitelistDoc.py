@@ -50,7 +50,7 @@ def get_whitelist_lines():
     return lines
 
 def get_permission_lines():
-    sql = "select player.steam64ID, player.TPFID, permission.permission from `player` join `permission` on player.TPFID= permission.TPFID;"
+    sql = "select player.steam64ID, player.TPFID, permission.permission from `player` join `permission` on player.TPFID= permission.TPFID order by permission.permission;"
     permissions = excecute_query(sql, None, 2)
     lines = []
     for perm in permissions:
