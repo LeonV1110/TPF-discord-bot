@@ -71,5 +71,5 @@ def check_discordID(discordID: str):
     return
 
 def get_max_whitelists(tier):
-    tierDict = {'whitelist': 1, 'farmer': 2, 'council': 5, 'show_off': 10}
+    tierDict = {'whitelist': 1, 'farmer': 1, 'council': 1, 'show_off': 1} #TODO update with acturate values
     return tierDict[tier]

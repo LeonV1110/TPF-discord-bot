@@ -15,7 +15,7 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 GUILDID = int(os.getenv('DISCORD_GUILD_ID'))
-
+guild_ids = [GUILDID]
 intents = disnake.Intents.default()
 intents.members = True
 intents.message_content = True #TODO, probably not needed
@@ -51,7 +51,7 @@ async def on_member_remove(member):
 ########   Player Commands    ###########
 #########################################
 
-@bot.slash_command(description = "Link your steam64ID with your discord account in our database.") 
+@bot.slash_command(description = "Link your steam64ID with your discord account in our database.", guild_ids=guild_ids) 
 #Also actives whitelist and perms if role is present
 async def register(inter, steam64id: str):
     await inter.response.defer(ephemeral=True)
@@ -67,7 +67,7 @@ async def register(inter, steam64id: str):
     return
 
     
-@bot.slash_command(description = "Deletes your entry from our database, also removes your whitelist of anyone on your subscription.")
+@bot.slash_command(description = "Deletes your entry from our database, also removes your whitelist of anyone on your subscription.", guild_ids=guild_ids)
 async def remove_myself_from_database(inter):
     await inter.response.defer(ephemeral=True)
     embed = Embed(title='You have been successfully deleted from the database.')
@@ -82,7 +82,7 @@ async def remove_myself_from_database(inter):
     await inter.followup.send(embed=embed, ephemeral=True)
     return
 
-@bot.slash_command(description = "Reloads your data in the database.")
+@bot.slash_command(description = "Reloads your data in the database.", guild_ids=guild_ids)
 async def update_data(inter):
     await inter.response.defer(ephemeral=True)
     embed = Embed(title='Your data was successfully updated.')
@@ -97,7 +97,7 @@ async def update_data(inter):
     await inter.followup.send(embed= embed, ephemeral=True)
     return
 
-@bot.slash_command(description= "Changes your steam64ID in the database.")
+@bot.slash_command(description= "Changes your steam64ID in the database.", guild_ids=guild_ids)
 async def change_steam64id(inter, steam64id):
     await inter.response.defer(ephemeral=True)
     embed = Embed(title='Your steam64id was successfully updated.')
@@ -112,7 +112,7 @@ async def change_steam64id(inter, steam64id):
     await inter.followup.send(embed= embed, ephemeral=True)
     return
 
-@bot.slash_command(description = "See what information we have about you in the database.")
+@bot.slash_command(description = "See what information we have about you in the database.", guild_ids=guild_ids)
 async def get_info(inter):
     await inter.response.defer(ephemeral=True)
 
@@ -130,7 +130,7 @@ async def get_info(inter):
 ########   Whitelist Commands    ########
 #########################################
 
-@bot.slash_command(description = "Adds a player to your whitelist subscription. Use their Steam64ID.")
+@bot.slash_command(description = "Adds a player to your whitelist subscription. Use their Steam64ID.", guild_ids=guild_ids)
 async def add_player_to_whitelist(inter, steam64id: str):
     await inter.response.defer(ephemeral=True)
     
@@ -144,7 +144,7 @@ async def add_player_to_whitelist(inter, steam64id: str):
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(description = "Removes a player from your whitelist subscription. Use their steam64ID.")
+@bot.slash_command(description = "Removes a player from your whitelist subscription. Use their steam64ID.", guild_ids=guild_ids)
 async def remove_player_from_whitelist(inter, steam64id: str):
     await inter.response.defer(ephemeral=True)
 
@@ -158,7 +158,7 @@ async def remove_player_from_whitelist(inter, steam64id: str):
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(description = "Replaces one player for another on your subscription. First steam64ID is replaced with the 2nd one.")
+@bot.slash_command(description = "Replaces one player for another on your subscription. First steam64ID is replaced with the 2nd one.", guild_ids=guild_ids)
 async def update_player_on_whitelist(inter, old_steam64id: str, new_steam64id: str):
     await inter.response.defer(ephemeral=True)
 
@@ -172,7 +172,7 @@ async def update_player_on_whitelist(inter, old_steam64id: str, new_steam64id: s
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(description = "See the current state of your whitelist subscription in our database.")
+@bot.slash_command(description = "See the current state of your whitelist subscription in our database.", guild_ids=guild_ids)
 async def get_whitelist_subscription_info(inter):
     await inter.response.defer(ephemeral=True)
     
@@ -191,7 +191,7 @@ async def get_whitelist_subscription_info(inter):
 ########   Admin Commands    ########
 #####################################
 
-@bot.slash_command(description = "Removes a player from the database, including thier whitelist order and whitelists on that order.")
+@bot.slash_command(description = "Removes a player from the database, including thier whitelist order and whitelists on that order.", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def admin_nuke_player(inter, discordid: str, steam64id: str):
     await inter.response.defer(ephemeral=True)
@@ -212,7 +212,7 @@ async def admin_nuke_player(inter, discordid: str, steam64id: str):
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(description = "Get player info on player.")
+@bot.slash_command(description = "Get player info on player.", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def admin_get_player_info(inter, discordid: str):
     await inter.response.defer()
@@ -226,7 +226,7 @@ async def admin_get_player_info(inter, discordid: str):
     await inter.followup.send(embed=embed)
     return
 
-@bot.slash_command(description = "Get whitelist info on players whitelist subscription")
+@bot.slash_command(description = "Get whitelist info on players whitelist subscription", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True)
 async def admin_get_whitelist_info(inter, discordid: str):
     await inter.response.defer()
@@ -245,7 +245,7 @@ async def admin_get_whitelist_info(inter, discordid: str):
 #########   Leon Commands    ########
 #####################################
 
-@bot.slash_command(description = "Imports whitelist from the spreadsheet, don't touch unless you're called Leon")
+@bot.slash_command(description = "Imports whitelist from the spreadsheet, don't touch unless you're called Leon", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def import_spreadsheet(inter):
     await inter.response.defer(ephemeral=True)
@@ -261,7 +261,7 @@ async def import_spreadsheet(inter):
     await inter.followup.send(embed = embed, ephemeral=True)
     return
 
-@bot.slash_command(description = "Does the database setup, don't touch unless you're called Leon.")
+@bot.slash_command(description = "Does the database setup, don't touch unless you're called Leon.", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def setup_database(inter):
     await inter.response.defer()
@@ -274,7 +274,7 @@ async def setup_database(inter):
     await inter.followup.send(embed = embed)
     return
 
-@bot.slash_command(description = "dont worry")
+@bot.slash_command(description = "dont worry", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def get_role_ids(inter):
     await inter.response.defer()
@@ -286,19 +286,19 @@ async def get_role_ids(inter):
     return
 
 
-@bot.slash_command(description = "Dont worry, don't touch unless you're called Leon.")
+@bot.slash_command(description = "Dont worry, don't touch unless you're called Leon.", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def testing(inter):
     await inter.response.defer()
     embed = Embed(title= "Boo", colour = disnake.Colour.gold(), description="aardappels")
     embed.set_footer(text = "idk")
-
+    print(inter.guild_id)
     view = disnake.ui.View()
     view.add_item(disnake.ui.Button(label='test'))
     await inter.followup.send(embed = embed, view= view)
     return
 
-@bot.slash_command(description = "Dont worry, don't touch unless you're called Leon.")
+@bot.slash_command(description = "Dont worry, don't touch unless you're called Leon.", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
 async def explain_embed(inter):
     await inter.response.defer()

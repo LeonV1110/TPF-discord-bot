@@ -63,17 +63,17 @@ def get_player_info(member: Member = None, discordID: str = None, steam64ID: str
     player = get_player(discordID, steam64ID, TPFID)
 
     embed = Embed(title=player.name)
-    embed.add_field(name = 'steam64 ID', value= str(player.steam64ID))
-    embed.add_field(name = 'discord ID', value= str(player.discordID))
-    embed.add_field(name = 'TPF ID', value= str(player.TPFID))
+    embed.add_field(name = 'Steam64 ID', value= str(player.steam64ID), inline=False)
+    embed.add_field(name = 'Discord ID', value= str(player.discordID), inline=False)
+    embed.add_field(name = 'TPF ID', value= str(player.TPFID), inline=False)
 
     if player.check_whitelist():
         whitelist_status = 'Active'
     else:
         whitelist_status = 'Inactive'
-    embed.add_field(name = 'Whitelist Status', value = whitelist_status)
+    embed.add_field(name = 'Whitelist Status', value = whitelist_status, inline=False)
     if player.whitelist_order is not None:
-        embed.add_field(name = 'Whitelist Subscription', value= player.whitelist_order.tier)
+        embed.add_field(name = 'Whitelist Subscription', value= player.whitelist_order.tier, inline=False)
     
     return embed
 
@@ -149,10 +149,10 @@ def get_whitelist_info(member: Member = None, discordID:str = None, steam64ID: s
         return Embed(title="It seems like you don't have a whitelist subscription. Make sure you are subscribed on Patreon and reconnect your discord account to Patreon.")
     
     wo = player.whitelist_order
-    whitelistees = []
+    whitelistees = ""
     for whitelist in wo.whitelists:
         player = get_player(TPFID=whitelist.TPFID)
-        whitelistees.append((player.name, player.steam64ID))
+        whitelistees += player.name + ' ' + player.steam64ID + '\n'
     
     if player.check_whitelist():
         whitelist_status = 'Active'
@@ -160,8 +160,11 @@ def get_whitelist_info(member: Member = None, discordID:str = None, steam64ID: s
         whitelist_status = 'Inactive'
 
     embed = Embed(title = 'Whitelist Subscription: ' + player.name)
-    embed.add_field(name = 'Tier: ', value= wo.tier)
-    embed.add_field(name = 'Status: ', value = whitelist_status)
-    embed.add_field(name = 'Whitelists: ', value= whitelistees)
+    embed.add_field(name = 'Tier: ', value= wo.tier, inline=False)
+    embed.add_field(name = 'Status: ', value = whitelist_status, inline=False)
+
+
+
+    embed.add_field(name = 'Whitelists: ', value= whitelistees, inline=False)
 
     return embed
