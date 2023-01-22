@@ -44,7 +44,7 @@ class Player():
         sql = "SELECT * FROM `player` WHERE `discordID` = %s"
         vars = (self.discordID)
         res = excecute_query(sql, vars, 1)
-        if bool(res): raise DuplicatePlayerPresentDiscord()
+        if bool(res): raise DuplicatePlayerPresentDiscord("You have already registered, if you want to update your Steam64 ID use the command /change_steam64id.")
         else: return
 
     def delete_player(self):
@@ -109,11 +109,17 @@ class Player():
 
     def update_permission(self, permission: str):
         if self.permission is None:
-            
             self.permission = Permission(self.TPFID, permission)
             self.permission.permission_to_DB()
-        self.permission.update_permission(permission)
-        return
+            return
+        elif permission == self.permission.permission:
+            return
+        elif permission is None:
+            self.permission.delete_permission()
+            return
+        else:
+            self.permission.update_permission(permission)
+            return
 
     def add_whitelist_order(self, tier):
         self.whitelist_order = NewWhitelistOrder(self.TPFID, tier)
@@ -125,14 +131,14 @@ class Player():
         return
 
     # Checks both for pressence of whitelist and if the order is active
-    def check_whitelist(self): 
+    def check_whitelist(self) -> bool: 
         sql = "SELECT * FROM `whitelist` WHERE `TPFID` = %s"
         vars = (self.TPFID)
         res = excecute_query(sql, vars, 1)
         if res:
             orderID = res['orderID']
             WhitelistOrder = OrderIDWhitelistOrder(orderID)
-            return WhitelistOrder.active
+            return bool(WhitelistOrder.active)
         else: return False
     
     def check_for_duplicate_player(self, steam64ID):

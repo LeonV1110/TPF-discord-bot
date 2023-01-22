@@ -200,7 +200,7 @@ async def admin_nuke_player(inter, discordid: str, steam64id: str):
         p1 = bhlp.get_player(discordID = discordid)
         p2 = bhlp.get_player(steam64ID = steam64id)
         if p1 == p2:
-            bhlp.remove_player(discordid)
+            bhlp.remove_player(discordID=discordid)
             embed = Embed(title=p1.name + ' has been successfully deleted from the database.')
         else:
             embed = Embed(title="The discordID and steam64ID don't match, double check and try again. If the issue persists you can annoy Leon I guess...")

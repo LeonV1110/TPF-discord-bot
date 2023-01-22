@@ -58,6 +58,18 @@ class WhitelistOrder():
         #Raise insuffientTier error if the order tier is to low
         if not self.active: raise InsufficientTier()
         return
+    
+    def update_order_active(self):
+        if self.active:
+            if len(self.whitelists) > get_max_whitelists(self.tier): #TODO: triggers when it shouldn't, I think
+                self.active = False
+        else:
+            if len(self.whitelists) <= get_max_whitelists(self.tier):
+                self.active = True
+
+        sql = "UPDATE `whitelist_order` SET `active` = %s WHERE `ORDERID` = %s"
+        vars = (int(self.active), self.orderID)
+        excecute_query(sql, vars)
 
     def add_whitelist(self, TPFID: str):
         for whitelist in self.whitelists:
@@ -78,6 +90,7 @@ class WhitelistOrder():
             if whitelist.TPFID == TPFID:
                 whitelist.delete_whitelist()
                 self.whitelists.remove(whitelist)
+                self.update_order_active()
                 return
         raise WhitelistNotFound()
 

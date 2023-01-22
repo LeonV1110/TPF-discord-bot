@@ -25,7 +25,7 @@ def excecute_query(sql: str, vars: tuple = None, format: int = 3):
     else: return
 
 def create_doc():
-    f = open("Whitelist doc\WhitelistDoc.txt", "w")
+    f = open("WhitelistDoc.txt", "w")
     
     whitelist_lines = get_whitelist_lines()
     permission_lines = get_permission_lines()

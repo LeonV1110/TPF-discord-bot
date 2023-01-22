@@ -42,7 +42,6 @@ def register_player(member: Member, steam64ID: str):
 def remove_player(member: Member = None, discordID: str = None, steam64ID: str = None, TPFID: str = None):
     if member is not None:
         discordID = str(member.id)
-    
     player = get_player(discordID, steam64ID, TPFID)
     player.delete_player()
     return
