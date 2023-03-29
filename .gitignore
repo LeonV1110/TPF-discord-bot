@@ -6,3 +6,4 @@ tpf-bot-a10312bb9a93.json
 .env copy
 Whitelist doc/WhitelistDoc.txt
 old_bot/
+venv/
