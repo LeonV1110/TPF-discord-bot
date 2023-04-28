@@ -279,9 +279,8 @@ async def setup_database(inter):
 async def get_role_ids(inter):
     await inter.response.defer()
     roles = inter.author.roles
-    res = len(roles)
+    res = ""
     for role in roles:
-        
         res += role.name + " : " + role.id + "\n"
     embed = Embed(title='something', description = res)
     await inter.followup.send(embed = embed)
