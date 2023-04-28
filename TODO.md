@@ -1,6 +1,3 @@
-create seperate docker container for whitelistDoc.py
-
-figure out database with docker
 
 Hosting!
 
