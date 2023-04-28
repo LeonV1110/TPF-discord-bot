@@ -281,7 +281,7 @@ async def get_role_ids(inter):
     roles = inter.author.roles
     res = ""
     for role in roles:
-        res += role.name + " : " + role.id + "\n"
+        res += role.name + "\n"
     embed = Embed(title='something', description = res)
     await inter.followup.send(embed = embed)
     return
