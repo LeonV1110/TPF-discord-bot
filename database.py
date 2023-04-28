@@ -1,12 +1,14 @@
-from dotenv import load_dotenv
-import os
 import pymysql
+import configparser
 
-load_dotenv()
-DATABASEUSER = os.getenv('DATABASE_USERNAME')
-DATABASEPSW = os.getenv('DATABASE_PASSWORD')
-DATABASEHOST = os.getenv('DATABASE_HOST')
-DATABASENAME = os.getenv('DATABASE_NAME')
+#Read in config file and set global variables
+config = configparser.ConfigParser()
+config.read('config.ini')
+DATABASEUSER = config['DATABASE']['DATABASE_USERNAME']
+DATABASEPSW = config['DATABASE']['DATABASE_PASSWORD']
+DATABASEHOST = config['DATABASE']['DATABASE_HOST']
+DATABASENAME = config['DATABASE']['DATABASE_NAME']
+
 
 
 def connect_database() -> pymysql.connections.Connection:
