@@ -1,21 +1,20 @@
 from error import InvalidSteam64ID, InvalidDiscordID
-from dotenv import load_dotenv
-import os
+import configparser
 
-
-load_dotenv()
-
-JUNIORADMINROLE = int(os.getenv('JUNIOR_ADMIN_ROLE'))
-ADMINROLE = int(os.getenv('ADMIN_ROLE'))
-SENIORADMINROLE = int(os.getenv('SENIOR_ADMIN_ROLE'))
-DADMINROLE = int(os.getenv('DADMIN_ROLE'))
-#CAMROLE = int(os.getenv('CAM_ROLE'))
-#MVPROLE = int(os.getenv('MVP_ROLE'))
-CREATORROLE = int(os.getenv('CREATOR_ROLE'))
-WHITELISTROLE = int(os.getenv('WHITELIST_ROLE'))
-FARMERROLE = int(os.getenv('FARMER_ROLE'))
-COUNCILROLE = int(os.getenv('COUNCIL_ROLE'))
-SHOWOFFROLE = int(os.getenv('SHOW_OFF_ROLE'))
+#Read in config file and set global variables
+config = configparser.ConfigParser()
+config.read('config.ini')
+JUNIORADMINROLE = int(config['ADMINROLES']['JUNIOR'])
+ADMINROLE = int(config['ADMINROLES']['ADMIN'])
+SENIORADMINROLE = int(config['ADMINROLES']['SENIOR'])
+DADMINROLE = int(config['ADMINROLES']['DADMIN'])
+#CAMROLE = int(config['ADMINROLES']['CAM'])
+#MVPROLE = int(config['WHITELISTROLES']['MVP'])
+CREATORROLE = int(config['WHITELISTROLES']['CREATOR'])
+WHITELISTROLE = int(config['WHITELISTROLES']['WHITELIST'])
+FARMERROLE = int(config['WHITELISTROLES']['FARMER'])
+COUNCILROLE = int(config['WHITELISTROLES']['COUNCIL'])
+SHOWOFFROLE = int(config['WHITELISTROLES']['SHOWOFF'])
 
 def convert_role_to_perm(roles):
     roles.reverse()

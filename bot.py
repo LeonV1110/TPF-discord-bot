@@ -10,11 +10,14 @@ from dotenv import load_dotenv
 from error import MyException
 from pymysql import OperationalError
 import buttonCallbacks as bcb
+import configparser
 
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD = os.getenv('DISCORD_GUILD')
-GUILDID = int(os.getenv('DISCORD_GUILD_ID'))
+#Read in config file and set global variables
+config = configparser.ConfigParser()
+config.read('config.ini')
+TOKEN = config['DISCORD']['TOKEN']
+GUILD = config['DISCORD']['TOKEN']
+GUILDID = int(config['DISCORD']['GUILDID'])
 guild_ids = [GUILDID]
 intents = disnake.Intents.default()
 intents.members = True
@@ -356,5 +359,13 @@ async def explain_embed(inter):
 
     await inter.followup.send(embed = embed, view= view)
     return
-
+@bot.slash_command(description = "Don't touch", guild_ids=guild_ids)
+@commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
+async def get_role_ids(inter):
+    await inter.response.defer()
+    member = inter.author
+    res = ""
+    for role in member.roles:
+        res += role.name + " : " + role.id
+    return
 bot.run(TOKEN)

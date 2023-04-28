@@ -1,15 +1,16 @@
 import pygsheets
 import pandas as pd
-import os
-from dotenv import load_dotenv
 import disnake
 from player import NewPlayer
 import helper as hlp
 from error import MyException, PlayerNotFound
+import configparser
 
-load_dotenv()
-GOOGLEBOT = os.getenv("GOOGLE_BOT_FILE")
-GUILD = os.getenv('DISCORD_GUILD')
+#Read in config file and set global variables
+config = configparser.ConfigParser()
+config.read('config.ini')
+GOOGLEBOT = config['GOOGLE']['GOOGLEBOT']
+GUILD = config['DISCORD']['GUILD']
 
 def get_sheet() -> pd.DataFrame:
     gc = pygsheets.authorize(service_account_file=GOOGLEBOT)

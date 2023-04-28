@@ -1,6 +1,4 @@
 # To ensure app dependencies are ported from your virtual environment/host machine into your container, run 'pip freeze > requirements.txt' in the terminal to overwrite this file
-
-python-dotenv==0.20.0
 disnake==2.5.1
 pygsheets==2.0.5
 pandas==1.4.3
