@@ -356,13 +356,5 @@ async def explain_embed(inter):
 
     await inter.followup.send(embed = embed, view= view)
     return
-@bot.slash_command(description = "Don't touch", guild_ids=guild_ids)
-@commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
-async def get_role_ids(inter):
-    await inter.response.defer()
-    member = inter.author
-    res = ""
-    for role in member.roles:
-        res += role.name + " : " + role.id
-    return
+
 bot.run(TOKEN)
