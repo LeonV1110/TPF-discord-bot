@@ -1,12 +1,9 @@
-import os
-
 import botHelper as bhlp
 import disnake
 import whitelistSpreadsheet
 from disnake import Embed, Interaction
 from disnake.ui import View, Button
 from disnake.ext import commands
-from dotenv import load_dotenv
 from error import MyException
 from pymysql import OperationalError
 import buttonCallbacks as bcb
