@@ -350,7 +350,7 @@ async def explain_embed(inter):
     get_whitelist_info_button = Button(label= 'Get My Whitelist Info')
     get_whitelist_info_button.callback = bcb.get_whitelist_info_button_callback
 
-    view = View()
+    view = View(timeout = None)
     view.add_item(get_info_button)
     view.add_item(update_data_button)
     view.add_item(get_whitelist_info_button)

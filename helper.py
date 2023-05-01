@@ -8,8 +8,8 @@ JUNIORADMINROLE = int(config['ADMINROLES']['JUNIOR'])
 ADMINROLE = int(config['ADMINROLES']['ADMIN'])
 SENIORADMINROLE = int(config['ADMINROLES']['SENIOR'])
 DADMINROLE = int(config['ADMINROLES']['DADMIN'])
-#CAMROLE = int(config['ADMINROLES']['CAM'])
-#MVPROLE = int(config['WHITELISTROLES']['MVP'])
+CAMROLE = int(config['ADMINROLES']['CAM'])
+MVPROLE = int(config['WHITELISTROLES']['MVP'])
 CREATORROLE = int(config['WHITELISTROLES']['CREATOR'])
 WHITELISTROLE = int(config['WHITELISTROLES']['WHITELIST'])
 FARMERROLE = int(config['WHITELISTROLES']['FARMER'])
@@ -23,9 +23,9 @@ def convert_role_to_perm(roles):
         elif role.id == SENIORADMINROLE: return 'senior'
         elif role.id == ADMINROLE: return 'admin'
         elif role.id == JUNIORADMINROLE: return 'junior'
-        #elif role.id == CAMROLE: return 'cam'
+        elif role.id == CAMROLE: return 'cam'
         elif role.id == CREATORROLE: return 'creator'
-        #elif role.id == MVPROLE: return 'MVP'
+        elif role.id == MVPROLE: return 'MVP'
     return None
 
 def convert_role_to_tier(roles):
@@ -70,5 +70,5 @@ def check_discordID(discordID: str):
     return
 
 def get_max_whitelists(tier):
-    tierDict = {'whitelist': 1, 'farmer': 1, 'council': 1, 'show_off': 1} #TODO update with acturate values
+    tierDict = {'whitelist': 1, 'farmer': 2, 'council': 4, 'show_off': 10} #TODO update with acturate values
     return tierDict[tier]
