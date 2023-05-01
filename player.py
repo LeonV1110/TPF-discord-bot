@@ -109,9 +109,12 @@ class Player():
 
     def update_permission(self, permission: str):
         if self.permission is None:
-            self.permission = Permission(self.TPFID, permission)
-            self.permission.permission_to_DB()
-            return
+            if permission is None:
+                return
+            else:
+                self.permission = Permission(self.TPFID, permission)
+                self.permission.permission_to_DB()
+                return
         elif permission == self.permission.permission:
             return
         elif permission is None:
