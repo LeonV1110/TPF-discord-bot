@@ -301,6 +301,7 @@ async def testing(inter):
 
 @bot.slash_command(description = "Dont worry, don't touch unless you're called Leon.", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
+@commands.is_owner()
 async def explain_embed(inter):
     await inter.response.defer()
     embed = Embed(title= 'The TPF whitelist bot', colour= disnake.Colour.dark_gold())#TODO fix colour
