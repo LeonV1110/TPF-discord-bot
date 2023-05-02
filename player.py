@@ -133,13 +133,18 @@ class Player():
         self.whitelist_order.update_order_tier(tier)
         return
 
-    # Checks both for pressence of whitelist and if the order is active
-    def check_whitelist(self) -> bool: 
+    def check_whitelist_table(self):
         sql = "SELECT * FROM `whitelist` WHERE `TPFID` = %s"
         vars = (self.TPFID)
         res = excecute_query(sql, vars, 1)
-        if res:
-            orderID = res['orderID']
+        if res: return res
+        else: return False
+
+    # Checks both for pressence of whitelist and if the order is active
+    def check_whitelist(self) -> bool: 
+        whitelistTable = self.check_whitelist_table()
+        if whitelistTable:
+            orderID = whitelistTable['orderID']
             WhitelistOrder = OrderIDWhitelistOrder(orderID)
             return bool(WhitelistOrder.active)
         else: return False
@@ -151,7 +156,21 @@ class Player():
         if bool(res):
             raise DuplicatePlayerPresentSteam()
         return
-
+    
+    #checks who's whitelist order you're on, and returns their TPFID
+    def check_whos_whitelist_order(self):
+        if self.whitelist_order is not None: # if you have a whitelist order, you're on your own whitelist order
+            return self.TPFID
+        else:
+            whitelistTable = self.check_whitelist_table()
+            if whitelistTable:
+                orderID = whitelistTable['orderID']
+                WhitelistOrder = OrderIDWhitelistOrder(orderID)
+                res = WhitelistOrder.TPFID
+                return res
+            else: # if whitelisttable is false then there is no whiteslist entry for this player
+                return "No whitelist" #TODO maybe raise an error instead
+        
 ###########################
 ####### SUBCLASSES ########
 ###########################
@@ -189,13 +208,14 @@ class ListPlayer(Player):
         self.discordID = pl["discordID"]
         self.name = pl["name"]
         self.TPFID = pl["TPFID"]
-        if ListPlayer.get_permision(self.TPFID) is not None:
-            self.permission = Permission(self.TPFID, ListPlayer.get_permision(self.TPFID))
+        permission = ListPlayer.get_permision(self.TPFID)
+        if permission is not None:
+            self.permission = Permission(self.TPFID, permission)
         else:
             self.permission = None 
         try:
             self.whitelist_order = DatabaseWhitelistOrder(self.TPFID)
-        except:
+        except: #TODO put in actual error handeling, instead of just passing any errors
             pass
         # TODO handle whitelist order and permission in the same way
         #Patreon ID not implemented as it's unused

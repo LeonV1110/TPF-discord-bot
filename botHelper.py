@@ -66,9 +66,13 @@ def get_player_info(member: Member = None, discordID: str = None, steam64ID: str
     embed.add_field(name = 'Steam64 ID', value= str(player.steam64ID), inline=False)
     embed.add_field(name = 'Discord ID', value= str(player.discordID), inline=False)
     embed.add_field(name = 'TPF ID', value= str(player.TPFID), inline=False)
-
+    
     if player.check_whitelist():
         whitelist_status = 'Active'
+        whitelist_owner_TPFID = player.check_whos_whitelist_order()
+        whitelist_owner = TPFIDPlayer(whitelist_owner_TPFID)
+        embed.add_field(name = 'Whitelisted by', value = whitelist_owner.name, inline = False)
+        
     else:
         whitelist_status = 'Inactive'
     embed.add_field(name = 'Whitelist Status', value = whitelist_status, inline=False)
