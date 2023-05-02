@@ -25,7 +25,7 @@ def convert_role_to_perm(roles):
         elif role.id == JUNIORADMINROLE: return 'junior'
         elif role.id == CAMROLE: return 'cam'
         elif role.id == CREATORROLE: return 'creator'
-        elif role.id == MVPROLE: return 'MVP'
+        elif role.id == MVPROLE: return 'mvp'
     return None
 
 def convert_role_to_tier(roles):
