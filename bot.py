@@ -32,7 +32,7 @@ guild_ids = [GUILDID]
 @bot.event
 async def on_ready():
     if not bot.persistent_views_added:
-        bot.add_view(ExplainEmbedView)
+        bot.add_view(ExplainEmbedView())
         bot.persistent_views_added = True
 
     print(f"We're logged in as {bot.user}")
