@@ -3,7 +3,7 @@ from disnake.ext import commands
 from disnake import Intents
 
 
-class PersistentBot(commands.bot):
+class PersistentBot(commands.Bot):
     def __init__(self):
         intents = Intents.default()
         intents.members = True

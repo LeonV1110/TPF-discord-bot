@@ -9,8 +9,8 @@ from error import MyException
 from pymysql import OperationalError
 import buttonCallbacks as bcb
 import configparser
-#from botSetup import bot
-#from explainEmbed import ExplainEmbedView
+from botSetup import bot
+from explainEmbed import ExplainEmbedView
 
 #Read in config file and set global variables
 config = configparser.ConfigParser()
@@ -20,19 +20,19 @@ GUILD = config['DISCORD']['TOKEN']
 GUILDID = int(config['DISCORD']['GUILDID'])
 guild_ids = [GUILDID]
 
-intents = Intents.default()
-intents.members = True
-intents.message_content = True
-bot = commands.Bot(intents = intents, command_prefix = '/')
+#intents = Intents.default()
+#intents.members = True
+#intents.message_content = True
+#bot = commands.Bot(intents = intents, command_prefix = '/')
 ######################
 ###### events ########
 ######################
 
 @bot.event
 async def on_ready():
-    #if not bot.persistent_views_added: 
-    #    bot.add_view(ExplainEmbedView)
-    #    bot.persistent_views_added = True
+    if not bot.persistent_views_added: 
+        bot.add_view(ExplainEmbedView)
+        bot.persistent_views_added = True
 
     print(f"We're logged in as {bot.user}")
 
@@ -357,7 +357,7 @@ async def explain_embed_setup(inter):
     get_whitelist_info_button = Button(label= 'Get My Whitelist Info')
     get_whitelist_info_button.callback = bcb.get_whitelist_info_button_callback
 
-    view = View(timeout=None)
+    view = ExplainEmbedView()
     view.add_item(get_info_button)
     view.add_item(update_data_button)
     view.add_item(get_whitelist_info_button)
