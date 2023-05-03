@@ -8,6 +8,8 @@ from error import MyException
 from pymysql import OperationalError
 import buttonCallbacks as bcb
 import configparser
+from botSetup import bot
+from explainEmbed import ExplainEmbedView
 
 #Read in config file and set global variables
 config = configparser.ConfigParser()
@@ -16,10 +18,6 @@ TOKEN = config['DISCORD']['TOKEN']
 GUILD = config['DISCORD']['TOKEN']
 GUILDID = int(config['DISCORD']['GUILDID'])
 guild_ids = [GUILDID]
-intents = disnake.Intents.default()
-intents.members = True
-intents.message_content = True #TODO, probably not needed
-bot = commands.Bot(intents = intents, command_prefix='/')
 
 ######################
 ###### events ########
@@ -27,6 +25,10 @@ bot = commands.Bot(intents = intents, command_prefix='/')
 
 @bot.event
 async def on_ready():
+    if not bot.persistent_views_added: 
+        bot.add_view(ExplainEmbedView)
+        bot.persistent_views_added = True
+
     print(f"We're logged in as {bot.user}")
 
 @bot.event
@@ -301,7 +303,7 @@ async def testing(inter):
 
 @bot.slash_command(description = "Dont worry, don't touch unless you're called Leon.", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator = True)
-async def explain_embed(inter):
+async def explain_embed_setup(inter):
     await inter.response.defer()
     embed = Embed(title= 'The TPF whitelist bot', colour= disnake.Colour.dark_gold())#TODO fix colour
     embed.add_field(name = '/register', value = '''
@@ -350,7 +352,7 @@ async def explain_embed(inter):
     get_whitelist_info_button = Button(label= 'Get My Whitelist Info')
     get_whitelist_info_button.callback = bcb.get_whitelist_info_button_callback
 
-    view = View(timeout = None)
+    view = ExplainEmbedView()
     view.add_item(get_info_button)
     view.add_item(update_data_button)
     view.add_item(get_whitelist_info_button)
