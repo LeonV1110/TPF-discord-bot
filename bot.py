@@ -348,13 +348,13 @@ async def explain_embed_setup(inter):
         ''', inline= False)
 
     
-    get_info_button = Button(label= 'Get My Info')
+    get_info_button = Button(label= 'Get My Info', custom_id='embed:getInfoButton')
     get_info_button.callback = bcb.get_info_button_callback
 
-    update_data_button = Button(label='Update My Data')
+    update_data_button = Button(label='Update My Data', custom_id='embed:UpdateDataButton')
     update_data_button.callback = bcb.update_data_button_callback
 
-    get_whitelist_info_button = Button(label= 'Get My Whitelist Info')
+    get_whitelist_info_button = Button(label= 'Get My Whitelist Info', custom_id='embed:getWhitelistInfoButton')
     get_whitelist_info_button.callback = bcb.get_whitelist_info_button_callback
 
     view = ExplainEmbedView()
