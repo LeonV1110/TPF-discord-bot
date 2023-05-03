@@ -23,7 +23,7 @@ guild_ids = [GUILDID]
 intents = Intents.default()
 intents.members = True
 intents.message_content = True
-bot = commands.bot(intents = intents, command_prefix = '/')
+bot = commands.Bot(intents = intents, command_prefix = '/')
 ######################
 ###### events ########
 ######################
