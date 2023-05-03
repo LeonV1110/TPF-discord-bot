@@ -4,11 +4,12 @@ import whitelistSpreadsheet
 from disnake import Embed, Interaction
 from disnake.ui import View, Button
 from disnake.ext import commands
+from disnake import Intents
 from error import MyException
 from pymysql import OperationalError
 import buttonCallbacks as bcb
 import configparser
-from botSetup import bot
+#from botSetup import bot
 from explainEmbed import ExplainEmbedView
 
 #Read in config file and set global variables
@@ -19,15 +20,19 @@ GUILD = config['DISCORD']['TOKEN']
 GUILDID = int(config['DISCORD']['GUILDID'])
 guild_ids = [GUILDID]
 
+intents = Intents.default()
+intents.members = True
+intents.message_content = True
+bot = commands.bot(intents = intents, command_prefix = '/')
 ######################
 ###### events ########
 ######################
 
 @bot.event
 async def on_ready():
-    if not bot.persistent_views_added: 
-        bot.add_view(ExplainEmbedView)
-        bot.persistent_views_added = True
+    #if not bot.persistent_views_added: 
+    #    bot.add_view(ExplainEmbedView)
+    #    bot.persistent_views_added = True
 
     print(f"We're logged in as {bot.user}")
 
