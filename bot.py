@@ -10,7 +10,7 @@ from pymysql import OperationalError
 import buttonCallbacks as bcb
 import configparser
 #from botSetup import bot
-from explainEmbed import ExplainEmbedView
+#from explainEmbed import ExplainEmbedView
 
 #Read in config file and set global variables
 config = configparser.ConfigParser()
@@ -357,7 +357,7 @@ async def explain_embed_setup(inter):
     get_whitelist_info_button = Button(label= 'Get My Whitelist Info')
     get_whitelist_info_button.callback = bcb.get_whitelist_info_button_callback
 
-    view = ExplainEmbedView()
+    view = View(timeout=None)
     view.add_item(get_info_button)
     view.add_item(update_data_button)
     view.add_item(get_whitelist_info_button)
