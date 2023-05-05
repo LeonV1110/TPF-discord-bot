@@ -64,9 +64,9 @@ def check_discordID(discordID: str):
     except:
         raise InvalidDiscordID('A discordID contains just numbers.')
     if len(discordID) < 17: 
-        raise InvalidDiscordID("A discordID is 18 characters long, this one is too short.")
-    elif len(discordID) > 18:
-        raise InvalidDiscordID("A discordID is 18 characters long, this one is too long.")
+        raise InvalidDiscordID("A discordID is at least 17 characters long, this one is too short.")
+    elif len(discordID) > 19:
+        raise InvalidDiscordID("A discordID is at most 19 characters long, this one is too long.")
     return
 
 def get_max_whitelists(tier):
