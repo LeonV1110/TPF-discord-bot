@@ -63,7 +63,7 @@ def check_discordID(discordID: str):
         int(discordID)
     except:
         raise InvalidDiscordID('A discordID contains just numbers.')
-    if len(discordID) < 18: 
+    if len(discordID) < 17: 
         raise InvalidDiscordID("A discordID is 18 characters long, this one is too short.")
     elif len(discordID) > 18:
         raise InvalidDiscordID("A discordID is 18 characters long, this one is too long.")
