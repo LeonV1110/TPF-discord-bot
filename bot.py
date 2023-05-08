@@ -357,7 +357,7 @@ async def explain_embed_setup(inter):
     embed = Embed(title='The TPF whitelist bot',
                   colour=disnake.Colour.dark_gold())  # TODO fix colour
     embed.add_field(name='/register', value='''
-        Register yourself in the database by using this command, in this command you wil have to input your Steam64 ID. Hit enter when you are done and wait for the bot to complete the procces. \n
+        Use this command or press the button below to register yourself in the database, you wil have to input your Steam64 ID. Hit enter when you are done and wait for the bot to complete the procces. \n
 	    - To find your Steam64 ID go to the settings page on your steam account and click on the "View Account Details" option. A new page will open in steam, at the top it will state "Steam64 ID: 7656119xxxxxxxxxx" (with the x's being unique to your account). This is your steam64ID that you need to use when registering.
         ''', inline=False)
     embed.add_field(name='/remove_myself_from_database', value='''
