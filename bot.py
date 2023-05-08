@@ -345,10 +345,10 @@ async def testing(inter):
 
 @bot.slash_command(description="TESTING STUFF, DON'T TOUCH", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator=True)
-async def do_not_touch(inter):
+async def do_not_touch(inter: disnake.AppCmdInter):
     modal = RegisterModal(inter.id)
-    modal.callback = RegisterModal.callback
-    await inter.response.send_modal(modal = modal)
+    #modal.callback = RegisterModal.callback
+    await inter.response.send_modal(modal=modal)
     return
 
 @bot.slash_command(description="Dont worry, don't touch unless you're called Leon.", guild_ids=guild_ids)

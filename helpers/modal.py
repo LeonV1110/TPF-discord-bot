@@ -6,8 +6,14 @@ from disnake.ui import Modal, TextInput
 
 class RegisterModal(Modal):
     def __init__(self, inter_id):
-        components = [TextInput(label= 'Steam64ID', placeholder='76561198029817168', custom_id=inter_id, style=TextInputStyle.short, max_length=19)]
-        super().__init__(title='Register', components=components, custom_id=inter_id, timeout=600)
+        components = [
+            TextInput(
+            label= 'Steam64ID', 
+            placeholder='76561198029817168', 
+            custom_id="inter_id", 
+            style=TextInputStyle.short, 
+            max_length=19)]
+        super().__init__(title='Register', components=components, custom_id="inter_id", timeout=600)
     
     async def callback(self, inter: ModalInteraction):
         print('AARDAPPEL')
