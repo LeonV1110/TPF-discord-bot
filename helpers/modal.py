@@ -1,6 +1,7 @@
 import disnake
 from disnake.ext import commands
 from disnake import TextInputStyle
+from disnake.interactions.modal import ModalInteraction
 from disnake.ui import Modal, TextInput
 
 class RegisterModal(Modal):
@@ -13,3 +14,6 @@ class RegisterModal(Modal):
         for key, value in inter.text_values.items():
             pass #Do registration
         await inter.response.send_message(embed=embed)
+
+    async def on_error(self, error: Exception, inter: ModalInteraction):
+        await inter.response.send_message(error)
