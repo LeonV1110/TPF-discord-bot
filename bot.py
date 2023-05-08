@@ -392,6 +392,10 @@ async def explain_embed_setup(inter):
         Use this command or press the button below to check who is on your whitelist subscription and if it's active or not.
         ''', inline=False)
 
+    register_button = Button(style = disnake.ButtonStyle.primary,
+        label='Register', custom_id='embed:register')
+    register_button.callback = bcb.register_button_callback
+
     get_info_button = Button(
         label='Get My Info', custom_id='embed:getInfoButton')
     get_info_button.callback = bcb.get_info_button_callback
@@ -405,10 +409,11 @@ async def explain_embed_setup(inter):
     get_whitelist_info_button.callback = bcb.get_whitelist_info_button_callback
 
     view = ExplainEmbedView()
+    view.add_item(register_button)
     view.add_item(get_info_button)
     view.add_item(update_data_button)
     view.add_item(get_whitelist_info_button)
-
+    
     await inter.followup.send(embed=embed, view=view)
     return
 

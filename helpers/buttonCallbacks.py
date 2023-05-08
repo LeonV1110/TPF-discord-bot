@@ -2,6 +2,7 @@ from helpers.error import MyException
 import helpers.botHelper as bhlp
 from disnake import Embed
 from pymysql import OperationalError
+from helpers.modal import RegisterModal
 
 async def get_info_button_callback(inter):
     await inter.response.defer(ephemeral=True)
@@ -41,4 +42,8 @@ async def update_data_button_callback(inter):
         embed = Embed(title= "The bot is currently having issues, please try again later.")
 
     await inter.followup.send(embed= embed, ephemeral=True)
+    return
+
+async def register_button_callback(inter):
+    await inter.response.send_modal(modal = RegisterModal)
     return
