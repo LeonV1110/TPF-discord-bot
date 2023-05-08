@@ -18,11 +18,16 @@ class RegisterModal(Modal):
         super().__init__(title='Register', components=components, custom_id=str(inter_id), timeout=600)
     
     async def callback(self, inter: ModalInteraction):
-        embed = disnake.Embed(title='Registration')
+        embed = disnake.Embed(title='Registration was successful')
         response = inter.text_values.items()
-        key, value = response[0]
+        #key, value = response[0]
+        
+        for key, value in response:
+            steam64ID = value
+        
+        
         try:
-            register_player(member=inter.author, steam64ID=value)
+            register_player(member=inter.author, steam64ID=steam64ID)
         except MyException as error:
             embed = disnake.Embed(title=error.message)
         except OperationalError:
