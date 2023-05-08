@@ -1,7 +1,7 @@
 import random
 
 from database.database import excecute_query
-from permission import Permission
+from database.permission import Permission
 from database.whitelistOrder import (DatabaseWhitelistOrder, NewWhitelistOrder,
                             WhitelistOrder, OrderIDWhitelistOrder)
 from helpers.error import PlayerNotFound, DuplicatePlayerPresent, DuplicatePlayerPresentSteam, DuplicatePlayerPresentDiscord
