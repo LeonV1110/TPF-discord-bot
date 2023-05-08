@@ -1,9 +1,9 @@
 import pygsheets
 import pandas as pd
 import disnake
-from player import NewPlayer
-import helper as hlp
-from error import MyException, PlayerNotFound
+from database.player import NewPlayer
+import helpers.helper as hlp
+from helpers.error import MyException, PlayerNotFound
 import configparser
 
 #Read in config file and set global variables

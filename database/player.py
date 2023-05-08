@@ -1,10 +1,10 @@
 import random
 
-from database import excecute_query
+from database.database import excecute_query
 from permission import Permission
-from whitelistOrder import (DatabaseWhitelistOrder, NewWhitelistOrder,
+from database.whitelistOrder import (DatabaseWhitelistOrder, NewWhitelistOrder,
                             WhitelistOrder, OrderIDWhitelistOrder)
-from error import PlayerNotFound, DuplicatePlayerPresent, DuplicatePlayerPresentSteam, DuplicatePlayerPresentDiscord
+from helpers.error import PlayerNotFound, DuplicatePlayerPresent, DuplicatePlayerPresentSteam, DuplicatePlayerPresentDiscord
 
 class Player():
     TPFID: str

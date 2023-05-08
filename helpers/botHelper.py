@@ -1,8 +1,8 @@
-import helper as hlp
+import helpers.helper as hlp
 from disnake import Embed, Member
-from error import (DuplicatePlayerPresent, InsufficientTier, MyException,
+from helpers.error import (DuplicatePlayerPresent, InsufficientTier, MyException,
                    PlayerNotFound)
-from player import DatabasePlayer, NewPlayer, Player, SteamPlayer, TPFIDPlayer
+from database.player import DatabasePlayer, NewPlayer, Player, SteamPlayer, TPFIDPlayer
 from pymysql import OperationalError
 
 

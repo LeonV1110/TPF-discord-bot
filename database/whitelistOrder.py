@@ -1,9 +1,9 @@
 import random
 
-from database import excecute_query
-from whitelist import Whitelist
-from helper import get_max_whitelists
-from error import InsufficientTier, WhitelistNotFound, SelfDestruct, DuplicatePlayerPresent
+from database.database import excecute_query
+from database.whitelist import Whitelist
+from helpers.helper import get_max_whitelists
+from helpers.error import InsufficientTier, WhitelistNotFound, SelfDestruct, DuplicatePlayerPresent
 
 class WhitelistOrder():
     TPFID: str

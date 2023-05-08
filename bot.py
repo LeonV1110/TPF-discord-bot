@@ -1,16 +1,17 @@
-import botHelper as bhlp
+import helpers.botHelper as bhlp
 import disnake
 import whitelistSpreadsheet
 from disnake import Embed, Interaction
 from disnake.ui import View, Button
 from disnake.ext import commands
 from disnake import Intents
-from error import MyException
+from helpers.error import MyException
 from pymysql import OperationalError
-import buttonCallbacks as bcb
+import helpers.buttonCallbacks as bcb
 import configparser
-from botSetup import bot
-from explainEmbed import ExplainEmbedView
+from helpers.botSetup import bot
+from helpers.explainEmbed import ExplainEmbedView
+from helpers.modal import RegisterModal
 
 # Read in config file and set global variables
 config = configparser.ConfigParser()
@@ -341,12 +342,11 @@ async def testing(inter):
     view.add_item(disnake.ui.Button(label='test'))
     await inter.followup.send(embed=embed, view=view)
     return
+
 @bot.slash_command(description="TESTING STUFF, DON'T TOUCH", guild_ids=guild_ids)
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator=True)
 async def do_not_touch(inter):
-    modal = disnake.ui.Modal(title= 'TESTING', components = disnake.ui.ActionRow())
-    modal.add_text_input(label='TEST INPUT', custom_id='input1')
-    await inter.response.send_modal(modal = modal)
+    await inter.response.send_modal(modal = RegisterModal(inter.id))
     return
 
 @bot.slash_command(description="Dont worry, don't touch unless you're called Leon.", guild_ids=guild_ids)

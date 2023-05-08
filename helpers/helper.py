@@ -1,4 +1,4 @@
-from error import InvalidSteam64ID, InvalidDiscordID
+from helpers.error import InvalidSteam64ID, InvalidDiscordID
 import configparser
 
 #Read in config file and set global variables

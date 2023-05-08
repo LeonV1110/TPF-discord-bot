@@ -1,4 +1,4 @@
-from database import excecute_query
+from database.database import excecute_query
 
 class Whitelist():
     TPFID: str

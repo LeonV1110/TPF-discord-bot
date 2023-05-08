@@ -1,5 +1,5 @@
-from error import MyException
-import botHelper as bhlp
+from helpers.error import MyException
+import helpers.botHelper as bhlp
 from disnake import Embed
 from pymysql import OperationalError
 
