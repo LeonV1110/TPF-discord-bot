@@ -347,7 +347,7 @@ async def do_not_touch(inter):
     await inter.response.defer()
     modal = disnake.ui.Modal(title= 'TESTING', components = disnake.ui.ActionRow())
     modal.add_text_input(label='TEST INPUT', custom_id='input1')
-    await inter.followup.send(modal = modal)
+    await inter.followup.send_modal(modal = modal)
     return
 
 @bot.slash_command(description="Dont worry, don't touch unless you're called Leon.", guild_ids=guild_ids)
