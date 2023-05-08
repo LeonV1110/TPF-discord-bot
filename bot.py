@@ -347,7 +347,6 @@ async def testing(inter):
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator=True)
 async def do_not_touch(inter: disnake.AppCmdInter):
     modal = RegisterModal(inter.id)
-    #modal.callback = RegisterModal.callback
     await inter.response.send_modal(modal=modal)
     return
 

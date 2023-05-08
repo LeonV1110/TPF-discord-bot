@@ -10,7 +10,7 @@ class RegisterModal(Modal):
     def __init__(self, inter_id):
         components = [
             TextInput(
-            label= 'Please provide your Steam64ID for registration.', 
+            label= 'Please provide your Steam64ID.', 
             placeholder='76561198029817168', 
             custom_id=str(inter_id), 
             style=TextInputStyle.short, 
