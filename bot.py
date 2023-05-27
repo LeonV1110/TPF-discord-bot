@@ -13,6 +13,7 @@ from helpers.botSetup import bot
 from helpers.explainEmbed import ExplainEmbedView
 from helpers.modal import RegisterModal
 import helpers.HLL as hll
+from io import BytesIO
 # Read in config file and set global variables
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -421,6 +422,6 @@ async def explain_embed_setup(inter):
 async def get_hll_vip(inter):
     await inter.response.defer()
     file = hll.getVIP()
-    await inter.followup.send("the file:", file = disnake.File(file, "VIP.txt"))
+    await inter.followup.send("the file:", file = disnake.File(fp = BytesIO(file),filename = "VIP.txt"))
 
 bot.run(TOKEN)
