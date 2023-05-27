@@ -15,7 +15,7 @@ def get_whitelists():
 
 def process_whitelists():
     ls = get_whitelists()
-    res = adminBodge
+    res = adminBodge()
     for player in ls:
         steamid = player['steam64ID']
         name = player['name']
