@@ -1,4 +1,6 @@
 from database.database import excecute_query
+from io import BytesIO
+
 def getVIP():
     return process_whitelists()
 
@@ -11,12 +13,9 @@ def get_whitelists():
 def process_whitelists():
     ls = get_whitelists()
     ls = adminBodge(ls)
-    file = open('VIP.txt', 'r+',  encoding="utf-8") 
-    for player in ls:
-        steamid = player['steam64ID']
-        name = player['name']
-        file.write(f'{steamid} {name} 2223-05-13T19:34:32.270802 \n')
-    return file
+    as_bytes = map(str.encode, ls)
+    content = BytesIO(as_bytes)
+    return content
 
 def adminBodge(input):
     ls = [
