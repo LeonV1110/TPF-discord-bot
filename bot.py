@@ -12,7 +12,7 @@ import configparser
 from helpers.botSetup import bot
 from helpers.explainEmbed import ExplainEmbedView
 from helpers.modal import RegisterModal
-
+import helpers.HLL as hll
 # Read in config file and set global variables
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -416,5 +416,12 @@ async def explain_embed_setup(inter):
     
     await inter.followup.send(embed=embed, view=view)
     return
-
+@bot.slash_command(description = "get a VIP list for HLL", guild_ids=guild_ids)
+@commands.default_member_permissions(kick_members=True, manage_roles=True, administrator=True)
+async def get_hll_vip(inter):
+    await inter.response.defer()
+    file = "TODO"
+    hll.getVIP()
+    with open('VIP.txt', 'r', encoding="itf-8") as file:
+        await inter.followup.send("the file:", file = disnake.File(file, "VIP.txt"))
 bot.run(TOKEN)
