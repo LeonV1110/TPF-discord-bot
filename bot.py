@@ -420,6 +420,7 @@ async def explain_embed_setup(inter):
 @commands.default_member_permissions(kick_members=True, manage_roles=True, administrator=True)
 async def get_hll_vip(inter):
     await inter.response.defer()
-    with hll.getVIP() as file:
-        await inter.followup.send("the file:", file = disnake.File(file, "VIP.txt"))
+    file = hll.getVIP()
+    await inter.followup.send("the file:", file = disnake.File(file, "VIP.txt"))
+
 bot.run(TOKEN)
