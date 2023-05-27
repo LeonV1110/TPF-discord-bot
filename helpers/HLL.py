@@ -1,6 +1,6 @@
 from database.database import excecute_query
 def getVIP():
-    process_whitelists()
+    return process_whitelists()
 
 def get_whitelists():
     sql = "SELECT steam64ID, name FROM tpf_bot.player JOIN tpf_bot.whitelist ON tpf_bot.player.TPFID = tpf_bot.whitelist.TPFID;"
@@ -11,11 +11,12 @@ def get_whitelists():
 def process_whitelists():
     ls = get_whitelists()
     ls = adminBodge(ls)
-    with open('VIP.txt', 'w',  encoding="utf-8") as file:
-        for player in ls:
-            steamid = player['steam64ID']
-            name = player['name']
-            file.write(f'{steamid} {name} 2223-05-13T19:34:32.270802 \n')
+    file = open('VIP.txt', 'r+',  encoding="utf-8") 
+    for player in ls:
+        steamid = player['steam64ID']
+        name = player['name']
+        file.write(f'{steamid} {name} 2223-05-13T19:34:32.270802 \n')
+    return file
 
 def adminBodge(input):
     ls = [
